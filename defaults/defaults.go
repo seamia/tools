@@ -20,6 +20,8 @@ const (
 	configFileExtention = ".defaults"
 )
 
+type HandleUnknownSetting func(name, value string)
+
 func convertToString(what interface{}) (s string, err error) {
 	switch value := what.(type) {
 	case string:
@@ -39,7 +41,7 @@ func convertToString(what interface{}) (s string, err error) {
 	return
 }
 
-func applySettings(config map[string]interface{}) {
+func applySettings(config map[string]interface{}, handle HandleUnknownSetting) {
 
 	if config != nil && len(config) > 0 {
 		for key, value := range config {
@@ -48,7 +50,12 @@ func applySettings(config map[string]interface{}) {
 					if key == "unformatted" {
 						// unformatted = value
 					} else {
-						debug.Trace("Found unsupported key (%s) in config file.", key)
+						if handle != nil {
+							debug.Trace("Calling provided handler to deal with [%s: %%s] found in config file.", key, data)
+							handle(key, data)
+						} else {
+							debug.Trace("Found unsupported key (%s) in config file.", key)
+						}
 					}
 				} else {
 					debug.Trace("\tkey (%s) = value (%s)", key, value)
@@ -60,7 +67,7 @@ func applySettings(config map[string]interface{}) {
 	}
 }
 
-func loadAndApplyDefaults(implicit bool) {
+func loadAndApplyDefaults(implicit bool, handle HandleUnknownSetting) {
 
 	// here is the plan:
 	// 0. environment ???
@@ -80,14 +87,14 @@ func loadAndApplyDefaults(implicit bool) {
 
 	if settings, err := support.LoadMapFromJsonFile(executable, true); err == nil {
 		debug.Trace("Applying settings loaded from file: %s", executable)
-		applySettings(settings)
+		applySettings(settings, handle)
 	}
 
 	if name, err := support.FindArgumentByPrefix("/config:"); err == nil {
 		if support.Exists(name) {
 			if settings, err := support.LoadMapFromJsonFile(name, true); err == nil {
 				debug.Trace("Applying settings loaded from file: %s", name)
-				applySettings(settings)
+				applySettings(settings, handle)
 			} else {
 				debug.Trace("Failed to load settings from file [%s] - %v.", name, err)
 			}
@@ -97,11 +104,11 @@ func loadAndApplyDefaults(implicit bool) {
 	}
 }
 
-func LoadAndApplyDefaults() {
-	loadAndApplyDefaults(false)
+func LoadAndApplyDefaults(handle HandleUnknownSetting) {
+	loadAndApplyDefaults(false, handle)
 }
 
 func init() {
 	// this is module init func. it is called before the 'main'
-	loadAndApplyDefaults(true)
+	loadAndApplyDefaults(true, nil)
 }
