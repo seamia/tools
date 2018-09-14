@@ -14,3 +14,7 @@ func Hash(raw []byte) string {
 	h.Write(raw)
 	return hex.EncodeToString(h.Sum(nil))
 }
+
+func NameToId(name string, length int) string {
+	return Hash([]byte(name))[:length]
+}
