@@ -88,19 +88,19 @@ func generate(from fileSlice, media io.Writer, pack string) {
 	fmt.Fprintln(media, "")
 	fmt.Fprintln(media, "import \"github.com/seamia/tools/assets\"\n")
 
-	fmt.Fprintf(media, "var staticAssets = assets.AssetRoot {\n")
+	fmt.Fprintf(media, "var staticAssets = assets.AssetRoot{\n")
 	for _, one := range from {
 
 		fmt.Fprintf(media, "\t%q: {\n", one.name)
-		fmt.Fprintf(media, "\t\tData: %q,\n", one.data)
+		fmt.Fprintf(media, "\t\tData:  %q,\n", one.data)
 		if len(one.mime) != 0 {
-			fmt.Fprintf(media, "\t\tMime: %q,\n", one.mime)
+			fmt.Fprintf(media, "\t\tMime:  %q,\n", one.mime)
 		}
 		fmt.Fprintf(media, "\t\tMtime: %v,\n", one.mtime.Unix())
 		if one.size != 0 {
-			fmt.Fprintf(media, "\t\tSize: %v,\n", one.size)
+			fmt.Fprintf(media, "\t\tSize:  %v,\n", one.size)
 		}
-		fmt.Fprintf(media, "\t\tHash: %q,\n", hex.EncodeToString(one.hash))
+		fmt.Fprintf(media, "\t\tHash:  %q,\n", hex.EncodeToString(one.hash))
 		fmt.Fprintf(media, "\t},\n")
 	}
 	fmt.Fprintf(media, "}\n")

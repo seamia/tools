@@ -29,11 +29,12 @@ func main() {
 	flag.StringVar(&listOfFiles, "src", "", "Name of the file where files to be included are listed")
 	flag.StringVar(&root, "root", "", "Path to be considered as root (within included files)")
 	flag.StringVar(&destination, "output", "staticAssets.go", "Name of the output file")
-	flag.StringVar(&packageName, "package", "", "Name of the package to be used in the generated file")
+	flag.StringVar(&packageName, "package", "main", "Name of the package to be used in the generated file")
 	flag.Parse()
 
 	if len(listOfFiles) == 0 {
-		fmt.Println("Please pass in a directory to process")
+		fmt.Println("Static Assets Generator (github.com/seamia/tools/assets/cmd/assets)")
+		fmt.Println("Please specify appropriate parameters")
 		flag.PrintDefaults()
 		return
 	}
