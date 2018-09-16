@@ -6,8 +6,8 @@ package assets
 
 import (
 	"compress/gzip"
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -27,6 +27,8 @@ type AssetInfo struct {
 
 type AssetRoot map[string]*AssetInfo
 
+const AssetUriPrefix = "assets://"
+
 var g_staticAssets AssetRoot = nil
 
 func Assign(assets AssetRoot) {
@@ -40,6 +42,12 @@ func Assign(assets AssetRoot) {
 }
 
 func Open(name string) (io.ReadCloser, error) {
+
+	// normalize the name (remove Uri prefix)
+	if strings.HasPrefix(name, AssetUriPrefix) {
+		name = name[len(AssetUriPrefix):]
+	}
+
 	f, ok := g_staticAssets[name]
 	if !ok {
 		return nil, fmt.Errorf("Asset %s not found", name)
@@ -136,4 +144,17 @@ func ExtractAssets(destination string, overwriteExisting bool) error {
 
 	doNotRollbackChanges = true
 	return nil
+}
+
+func IsAssetFile(name string) bool {
+
+	if g_staticAssets != nil && len(g_staticAssets) > 0 {
+		if strings.HasPrefix(name, AssetUriPrefix) {
+			assetName := name[len(AssetUriPrefix):]
+			if _,found := g_staticAssets[assetName]; found {
+				return true
+			}
+		}
+	}
+	return false
 }
