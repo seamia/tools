@@ -7,12 +7,22 @@ package support
 import (
 	"encoding/json"
 	"errors"
+	"github.com/seamia/tools/assets"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 const configRuntimeBranch = "runtime"
+
+func bytes2interface(raw []byte) (c interface{}, err error) {
+	if err = json.Unmarshal(raw, &c); err != nil {
+		assert("*** Failed to process file json data, error: " + err.Error())
+		c = nil
+	}
+	return c, err
+}
 
 func loadFromJson(name string) (interface{}, error) {
 	raw, err := ioutil.ReadFile(name)
@@ -21,12 +31,7 @@ func loadFromJson(name string) (interface{}, error) {
 		return nil, err
 	}
 
-	var c interface{}
-	if err = json.Unmarshal(raw, &c); err != nil {
-		assert("*** Failed to process file [" + name + "], error: " + err.Error())
-		c = nil
-	}
-	return c, err
+	return bytes2interface(raw)
 }
 
 func loadConfig(fullname string) (config map[string]interface{}, err error) {
@@ -60,7 +65,25 @@ func loadConfig(fullname string) (config map[string]interface{}, err error) {
 	return config, nil
 }
 
-func LoadConfig(name string) (map[string]interface{}, error) {
+func LoadConfig(name string, fallbackToAssetsOnFailure bool) (map[string]interface{}, error) {
+
+	if assets.IsAssetFile(name) {
+		var err error
+		if reader, err := assets.Open(name); err == nil {
+			if data, err := ioutil.ReadAll(reader); err == nil {
+				if raw, err := bytes2interface(data); err == nil {
+					return raw.(map[string]interface{}), nil
+				} else {
+					assert("failed to parse asset:" + name)
+				}
+			} else {
+				assert("failed to read asset:" + name)
+			}
+		} else {
+			assert("failed to open asset:" + name)
+		}
+		return nil, err
+	}
 
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err == nil {
@@ -70,6 +93,11 @@ func LoadConfig(name string) (map[string]interface{}, error) {
 		} else if Exists(name) { // let's test the path as we're given (in case it is an absolute one, or ...)
 			return loadConfig(name)
 		}
+
+		if fallbackToAssetsOnFailure {
+			return LoadConfig(assets.AssetUriPrefix + name, false)
+		}
+
 		err = errors.New("failed to find file [" + fullname + "] or [" + name + "].")
 	}
 	return nil, err
@@ -81,9 +109,6 @@ func GetLocation(config map[string]interface{}, what string) (string, error) {
 		if locations != nil {
 			if value, found := locations[what]; found {
 				evalue := os.ExpandEnv(value.(string))
-				if !Exists(evalue) {
-					return "", errors.New("Warning: Location setting (" + what + "), which expands to (" + evalue + ") - does not exist.")
-				}
 				return evalue, nil
 			} else {
 				return "", errors.New("Warning: Location setting (" + what + ") was not found in the provided config file.")
@@ -93,4 +118,12 @@ func GetLocation(config map[string]interface{}, what string) (string, error) {
 	} else {
 	}
 	return "", errors.New("Warning: Location settings were not found in the provided config file.")
+}
+
+func init() {
+	if runtime.GOOS == "windows" {
+		if os.Getenv("HOME") == "" {
+			os.Setenv("HOME", os.Getenv("USERPROFILE")) // making 'HOME' env var available everywhere
+		}
+	}
 }
