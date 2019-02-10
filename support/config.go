@@ -128,7 +128,10 @@ func SetLocation(config map[string]interface{}, key, value string) {
 		if locs, present := config[configLocationsBranch]; !present {
 			config[configLocationsBranch] = map[string]string{key: value}
 		} else {
-			config[configLocationsBranch][key] = value
+			locations := locs.(map[string]interface{})
+			if locations != nil {
+				locations[key] = value
+			}
 		}
 	}
 }
