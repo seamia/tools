@@ -14,7 +14,10 @@ import (
 	"runtime"
 )
 
-const configRuntimeBranch = "runtime"
+const (
+	configRuntimeBranch   = "runtime"
+	configLocationsBranch = "locations"
+)
 
 func bytes2interface(raw []byte) (c interface{}, err error) {
 	if err = json.Unmarshal(raw, &c); err != nil {
@@ -95,7 +98,7 @@ func LoadConfig(name string, fallbackToAssetsOnFailure bool) (map[string]interfa
 		}
 
 		if fallbackToAssetsOnFailure {
-			return LoadConfig(assets.AssetUriPrefix + name, false)
+			return LoadConfig(assets.AssetUriPrefix+name, false)
 		}
 
 		err = errors.New("failed to find file [" + fullname + "] or [" + name + "].")
@@ -104,7 +107,7 @@ func LoadConfig(name string, fallbackToAssetsOnFailure bool) (map[string]interfa
 }
 
 func GetLocation(config map[string]interface{}, what string) (string, error) {
-	if locs, present := config["locations"]; present {
+	if locs, present := config[configLocationsBranch]; present {
 		locations := locs.(map[string]interface{})
 		if locations != nil {
 			if value, found := locations[what]; found {
@@ -118,6 +121,16 @@ func GetLocation(config map[string]interface{}, what string) (string, error) {
 	} else {
 	}
 	return "", errors.New("Warning: Location settings were not found in the provided config file.")
+}
+
+func SetLocation(config map[string]interface{}, key, value string) {
+	if config != nil {
+		if locs, present := config[configLocationsBranch]; !present {
+			config[configLocationsBranch] = map[string]string{key: value}
+		} else {
+			config[configLocationsBranch][key] = value
+		}
+	}
 }
 
 func init() {
