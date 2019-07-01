@@ -11,6 +11,12 @@ import (
 	"fmt"
 	"os"
 	"log"
+	"strings"
+)
+
+type (
+	msi = map[string]interface{}
+	slice = []interface{}
 )
 
 func loadFromJson(name string) interface{} {
@@ -53,6 +59,7 @@ func trace(txt string) {
 var (
 	inputFlag     = flag.String("input", "", "Name of the input file")
 	outputFlag    = flag.String("output", "", "Name of the output file")
+	filterFlag    = flag.String("filter", "", "Name of the entry to exclude (; separated list)")
 	operationFlag = flag.String("operation", "pretty", "What operation to perform (e.g. pretty, compact, etc.)")
 )
 
@@ -63,6 +70,7 @@ func main() {
 	input := os.ExpandEnv(*inputFlag)
 	output := os.ExpandEnv(*outputFlag)
 	operation := os.ExpandEnv(*operationFlag)
+	filter := *filterFlag
 
 	if len(input) == 0 || len(output) == 0 || len(operation) == 0{
 		flag.Usage()
@@ -70,5 +78,47 @@ func main() {
 	}
 
 	data := loadFromJson(input)
+	data = filterOut(data, filter)
 	saveToJson(data, output)
+}
+
+func filterOut(data interface{}, filters string) interface{} {
+	parts := strings.Split(filters, ";")
+	if len(parts) > 0 {
+		for _, filter := range parts {
+			filter = strings.Trim(filter, " \t\r\n")
+			data, _ = filterOutKey(data, filter)
+		}
+	}
+	return data
+}
+
+func filterOutKey(data interface{}, filter string) (interface{}, bool) {
+	if len(filter) > 0 {
+		dirty := false
+		if typed, converts := data.(msi); converts {
+			if _, present := typed[filter]; present {
+				delete(typed, filter)
+				dirty = true
+			}
+			for k,v := range typed {
+				if modified, changed := filterOutKey(v, filter); changed {
+					typed[k] = modified
+					dirty = true
+				}
+			}
+			return typed, dirty
+
+		} else if list, converts := data.(slice); converts {
+			replacement := make(slice, 0, len(list))
+			for _, one := range list {
+				modified, _ := filterOutKey(one, filter)
+				replacement = append(replacement, modified)
+			}
+			return replacement, true
+		} else {
+
+		}
+	}
+	return data, false
 }
