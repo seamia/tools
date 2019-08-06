@@ -5,13 +5,20 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+)
+
+const (
+	compressedStreamPrefix = 31
 )
 
 type (
@@ -22,14 +29,20 @@ type (
 func loadFromJson(name string) interface{} {
 	raw, err := ioutil.ReadFile(name)
 	if err != nil {
-		fmt.Println("*** Failed to locate/read file [" + name + "], error: " + err.Error())
+		fmt.Println("*** Failed to locate/read file ["+name+"], error: ", err)
 		// os.Exit(1)
+		return nil
+	}
+
+	raw, err = decompress(raw)
+	if err != nil {
+		fmt.Println("*** Failed to decompress file ["+name+"], error: ", err)
 		return nil
 	}
 
 	var c interface{}
 	if err = json.Unmarshal(raw, &c); err != nil {
-		fmt.Println("*** Failed to process file [" + name + "], error: " + err.Error())
+		fmt.Println("*** Failed to process file ["+name+"], error: ", err)
 		c = nil
 	}
 	return c
@@ -41,7 +54,13 @@ func saveToJson(what interface{}, name string) {
 	if err != nil {
 		log.Println(err)
 	} else {
-		err = ioutil.WriteFile(name, b, 0644)
+
+		if len(name) == 0 || name == "stdout" || name == "console" || name == "-" || name == "screen" {
+			_, err = os.Stdout.Write(b)
+		} else {
+			err = ioutil.WriteFile(name, b, 0644)
+		}
+
 		if err != nil {
 			log.Println(err)
 		}
@@ -72,9 +91,18 @@ func main() {
 	operation := os.ExpandEnv(*operationFlag)
 	filter := *filterFlag
 
-	if len(input) == 0 || len(output) == 0 || len(operation) == 0 {
-		flag.Usage()
-		return
+	if len(input) == 0 || len(operation) == 0 {
+		if len(os.Args) >= 2 {
+			input = os.ExpandEnv(os.Args[1])
+			if len(os.Args) >= 3 {
+				output = os.ExpandEnv(os.Args[2])
+			}
+		}
+
+		if len(input) == 0 || len(operation) == 0 {
+			flag.Usage()
+			return
+		}
 	}
 
 	data := loadFromJson(input)
@@ -121,4 +149,37 @@ func filterOutKey(data interface{}, filter string) (interface{}, bool) {
 		}
 	}
 	return data, false
+}
+
+func decompress(what []byte) ([]byte, error) {
+
+	if len(what) == 0 {
+		// the source is empty - there is nothing here to decompress
+		return what, nil
+	}
+
+	if what[0] != compressedStreamPrefix {
+		// it doesn't seem to be compressed - return the source
+		if what[0] != byte('{') && what[0] != byte('[') {
+			fmt.Println("hmmmm.... unextected prefix of persisted stream ....")
+		}
+		return what, nil
+	}
+
+	gz, err := gzip.NewReader(bytes.NewBuffer(what))
+	if err != nil {
+		return nil, fmt.Errorf("Read: %v", err)
+	}
+
+	var decompressed bytes.Buffer
+	_, err = io.Copy(&decompressed, gz)
+	errClose := gz.Close()
+	if err != nil {
+		return nil, err
+	}
+	if errClose != nil {
+		return nil, errClose
+	}
+
+	return decompressed.Bytes(), nil
 }
