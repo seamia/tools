@@ -5,20 +5,22 @@
 package main
 
 import (
-	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/seamia/libs/zip"
+
+	"gopkg.in/yaml.v2"
 )
 
 const (
 	compressedStreamPrefix = 31
+	filePermissions        = 0644
 )
 
 type (
@@ -26,43 +28,55 @@ type (
 	slice = []interface{}
 )
 
-func loadFromJson(name string) interface{} {
+func loadFromFile(name string) interface{} {
 	raw, err := ioutil.ReadFile(name)
 	if err != nil {
-		fmt.Println("*** Failed to locate/read file ["+name+"], error: ", err)
+		log.Println("*** Failed to locate/read file ["+name+"], error: ", err)
 		// os.Exit(1)
 		return nil
 	}
 
-	raw, err = decompress(raw)
+	raw, err = zip.Decompress(raw)
 	if err != nil {
-		fmt.Println("*** Failed to decompress file ["+name+"], error: ", err)
+		log.Println("*** Failed to decompress file ["+name+"], error: ", err)
 		return nil
 	}
 
 	var c interface{}
 	if err = json.Unmarshal(raw, &c); err != nil {
-		fmt.Println("*** Failed to process file ["+name+"], error: ", err)
+		log.Println("*** Failed to process file ["+name+"], error: ", err)
 		c = nil
 	}
 	return c
 }
 
-func saveToJson(what interface{}, name string) {
+func saveToFile(what interface{}, operation, name string) {
 
-	b, err := json.MarshalIndent(what, "", "\t")
+	var b []byte
+	var err error
+	switch operation {
+	case "pretty", "":
+		b, err = json.MarshalIndent(what, "", "\t")
+	case "compact":
+		b, err = json.Marshal(what)
+	case "yaml":
+		b, err = yaml.Marshal(what)
+	default:
+		log.Println("Unsupported operation: ", operation)
+		return
+	}
 	if err != nil {
-		log.Println(err)
+		log.Println("There was an error converting: ", err)
 	} else {
 
 		if len(name) == 0 || name == "stdout" || name == "console" || name == "-" || name == "screen" {
 			_, err = os.Stdout.Write(b)
 		} else {
-			err = ioutil.WriteFile(name, b, 0644)
+			err = ioutil.WriteFile(name, b, filePermissions)
 		}
 
 		if err != nil {
-			log.Println(err)
+			log.Println("There was an error saving: ", err)
 		}
 	}
 }
@@ -105,9 +119,9 @@ func main() {
 		}
 	}
 
-	data := loadFromJson(input)
+	data := loadFromFile(input)
 	data = filterOut(data, filter)
-	saveToJson(data, output)
+	saveToFile(data, operation, output)
 }
 
 func filterOut(data interface{}, filters string) interface{} {
@@ -151,35 +165,5 @@ func filterOutKey(data interface{}, filter string) (interface{}, bool) {
 	return data, false
 }
 
-func decompress(what []byte) ([]byte, error) {
-
-	if len(what) == 0 {
-		// the source is empty - there is nothing here to decompress
-		return what, nil
-	}
-
-	if what[0] != compressedStreamPrefix {
-		// it doesn't seem to be compressed - return the source
-		if what[0] != byte('{') && what[0] != byte('[') {
-			fmt.Println("hmmmm.... unextected prefix of persisted stream ....")
-		}
-		return what, nil
-	}
-
-	gz, err := gzip.NewReader(bytes.NewBuffer(what))
-	if err != nil {
-		return nil, fmt.Errorf("Read: %v", err)
-	}
-
-	var decompressed bytes.Buffer
-	_, err = io.Copy(&decompressed, gz)
-	errClose := gz.Close()
-	if err != nil {
-		return nil, err
-	}
-	if errClose != nil {
-		return nil, errClose
-	}
-
-	return decompressed.Bytes(), nil
-}
+// this version adds:
+// - ability to output yaml
