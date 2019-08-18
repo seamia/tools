@@ -12,6 +12,15 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/seamia/libs/zip"
+
+	"gopkg.in/yaml.v2"
+)
+
+const (
+	compressedStreamPrefix = 31
+	filePermissions        = 0644
 )
 
 type (
@@ -19,31 +28,55 @@ type (
 	slice = []interface{}
 )
 
-func loadFromJson(name string) interface{} {
+func loadFromFile(name string) interface{} {
 	raw, err := ioutil.ReadFile(name)
 	if err != nil {
-		fmt.Println("*** Failed to locate/read file [" + name + "], error: " + err.Error())
+		log.Println("*** Failed to locate/read file ["+name+"], error: ", err)
 		// os.Exit(1)
+		return nil
+	}
+
+	raw, err = zip.Decompress(raw)
+	if err != nil {
+		log.Println("*** Failed to decompress file ["+name+"], error: ", err)
 		return nil
 	}
 
 	var c interface{}
 	if err = json.Unmarshal(raw, &c); err != nil {
-		fmt.Println("*** Failed to process file [" + name + "], error: " + err.Error())
+		log.Println("*** Failed to process file ["+name+"], error: ", err)
 		c = nil
 	}
 	return c
 }
 
-func saveToJson(what interface{}, name string) {
+func saveToFile(what interface{}, operation, name string) {
 
-	b, err := json.MarshalIndent(what, "", "\t")
+	var b []byte
+	var err error
+	switch operation {
+	case "pretty", "":
+		b, err = json.MarshalIndent(what, "", "\t")
+	case "compact":
+		b, err = json.Marshal(what)
+	case "yaml":
+		b, err = yaml.Marshal(what)
+	default:
+		log.Println("Unsupported operation: ", operation)
+		return
+	}
 	if err != nil {
-		log.Println(err)
+		log.Println("There was an error converting: ", err)
 	} else {
-		err = ioutil.WriteFile(name, b, 0644)
+
+		if len(name) == 0 || name == "stdout" || name == "console" || name == "-" || name == "screen" {
+			_, err = os.Stdout.Write(b)
+		} else {
+			err = ioutil.WriteFile(name, b, filePermissions)
+		}
+
 		if err != nil {
-			log.Println(err)
+			log.Println("There was an error saving: ", err)
 		}
 	}
 }
@@ -72,14 +105,23 @@ func main() {
 	operation := os.ExpandEnv(*operationFlag)
 	filter := *filterFlag
 
-	if len(input) == 0 || len(output) == 0 || len(operation) == 0 {
-		flag.Usage()
-		return
+	if len(input) == 0 || len(operation) == 0 {
+		if len(os.Args) >= 2 {
+			input = os.ExpandEnv(os.Args[1])
+			if len(os.Args) >= 3 {
+				output = os.ExpandEnv(os.Args[2])
+			}
+		}
+
+		if len(input) == 0 || len(operation) == 0 {
+			flag.Usage()
+			return
+		}
 	}
 
-	data := loadFromJson(input)
+	data := loadFromFile(input)
 	data = filterOut(data, filter)
-	saveToJson(data, output)
+	saveToFile(data, operation, output)
 }
 
 func filterOut(data interface{}, filters string) interface{} {
@@ -122,3 +164,6 @@ func filterOutKey(data interface{}, filter string) (interface{}, bool) {
 	}
 	return data, false
 }
+
+// this version adds:
+// - ability to output yaml
