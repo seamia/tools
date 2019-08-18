@@ -20,20 +20,19 @@ import (
 
 func call(relativeUrl, verb, data string) {
 
-	var payload io.Reader
-	if len(data) > 0 {
-		payload = bytes.NewReader([]byte(data))
-	}
-
 	u, err := url.Parse(expand(baseUrl))
 	quitOnError(err, "Parsing url [%s]", baseUrl)
-	u.Path = path.Join(u.Path, relativeUrl)
+	u.Path = path.Join(u.Path, expand(relativeUrl))
 	fullUrl := u.String()
 
 	if generateCurlCommands {
 		produceCurlCommand(fullUrl, verb, data)
 	} else {
 		data = loadExternalFile(data)
+		var payload io.Reader
+		if len(data) > 0 {
+			payload = bytes.NewReader([]byte(data))
+		}
 
 		client := &http.Client{}
 		request, err := http.NewRequest(strings.ToUpper(verb), fullUrl, payload)
@@ -88,10 +87,15 @@ func displayResponse(resp *http.Response) {
 }
 
 func displayHeaders(resp *http.Response, print printer.Printer) {
+	const format = "\tHeader: [%s] = [%s]"
 	if printResponseHeaders && len(resp.Header) > 0 {
 		for key := range resp.Header {
 			value := resp.Header.Get(key)
-			print("\tHeader: [%s] = [%s]", key, value)
+			if attentionNeeded(key) {
+				responseAttention(format, key, value)
+			} else {
+				print(format, key, value)
+			}
 		}
 	}
 }
@@ -101,12 +105,17 @@ func getContentType(resp *http.Response) string {
 }
 
 func displayPlainBody(data []byte, print printer.Printer) {
-	print("Body: %s", string(data))
+	if len(data) == 0 {
+		print("Body is empty.")
+	} else {
+		print("Body: %s", string(data))
+	}
 }
 
 func displayJsonBody(data []byte, print printer.Printer) {
-	if !responsePrettyPrintBody {
+	if !responsePrettyPrintBody || len(data) == 0 {
 		displayPlainBody(data, print)
+		return
 	}
 
 	var blank interface{}
@@ -134,4 +143,11 @@ func displayJsonBody(data []byte, print printer.Printer) {
 		reportError(err, "unmarshalling")
 	}
 	displayPlainBody(data, print)
+}
+
+func attentionNeeded(key string) bool {
+	if strings.HasSuffix(lower(key), headerAttentionSuffix) {
+		return true
+	}
+	return false
 }

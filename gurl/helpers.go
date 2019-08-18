@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -76,6 +77,9 @@ func responseSuccess(format string, a ...interface{}) {
 func responseFailure(format string, a ...interface{}) {
 	colorPrint(colorResponseFailure, format, a...)
 }
+func responseAttention(format string, a ...interface{}) {
+	colorPrint(colorResponseAttention, format, a...)
+}
 
 func colorPrint(clr color.Attribute, format string, a ...interface{}) {
 	color.Set(clr)
@@ -125,8 +129,15 @@ func getBoolean(src string, fallback bool) bool {
 
 func loadDefaults() {
 
+	// add runtime-based resolutions
 	resolver.Add(mapSessionKeyName, xid.New().String())
 
+	if fullpath, err := filepath.Abs(filename()); err == nil {
+		resolver.Add(mapScripFileName, filepath.Base(fullpath))
+		resolver.Add(mapScripFullFileName, fullpath)
+	}
+
+	// attempt to locate and load the defaults config file
 	location := os.Getenv(envDefaultsLocation)
 	if len(location) == 0 {
 		return

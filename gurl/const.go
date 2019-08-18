@@ -31,17 +31,21 @@ const (
 	configurationHeaderPrefix = "header:"
 	externalFilePrefix        = "@"
 
-	colorComment         = color.FgGreen
-	colorError           = color.FgRed
-	colorUsage           = color.FgHiCyan
-	colorResponse        = color.FgHiMagenta
-	colorResponseSuccess = color.FgHiGreen
-	colorResponseFailure = color.FgHiRed
+	colorComment           = color.FgGreen
+	colorError             = color.FgRed
+	colorUsage             = color.FgHiCyan
+	colorResponse          = color.FgHiMagenta
+	colorResponseSuccess   = color.FgHiGreen
+	colorResponseFailure   = color.FgHiRed
+	colorResponseAttention = color.FgYellow
 
-	headerContentType = "Content-Type"
-	contentTypeJson   = "application/json"
+	headerContentType     = "Content-Type"
+	contentTypeJson       = "application/json"
+	headerAttentionSuffix = "-error"
 
 	responsePrettyPrintBodyDefault = true
 
-	mapSessionKeyName = "session"
+	mapSessionKeyName    = "session"
+	mapScripFileName     = "script"
+	mapScripFullFileName = "script.full"
 )
