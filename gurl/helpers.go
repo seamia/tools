@@ -17,7 +17,7 @@ import (
 )
 
 func help(txt string) bool {
-	if txt == "/help" {
+	if txt == "/help" || strings.HasPrefix(txt, "-") {
 		return true
 	}
 	return false
@@ -25,7 +25,7 @@ func help(txt string) bool {
 
 func usage() {
 	color.Set(colorUsage)
-	fmt.Println("Usage: ...")
+	fmt.Println("Usage: gurl script.gurl")
 	color.Unset()
 
 	os.Exit(exitCodeOnUsage)
