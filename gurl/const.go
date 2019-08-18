@@ -1,0 +1,47 @@
+// Copyright 2019 Seamia Corporation. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package main
+
+import "github.com/fatih/color"
+
+const (
+	exitCodeOnError   = 7
+	exitCodeOnUsage   = 3
+	exitCodeOnSuccess = 1
+
+	lineSeparator = "\n"
+	wordSeparator = " \t"
+	shebang       = "#!/"
+
+	leadingWhiteSpace  = " \t"
+	trainingWhiteSpace = " \t\r\n"
+
+	commentPrefix = "#"
+
+	userAgent = "seamia/gurl"
+
+	envDefaultsLocation = "GURL_DEFAULT_SETTINGS"
+
+	printResponseHeadersDefault = true
+	generateCurlCommandsDefault = false
+	collectTimingInfoDefault    = false
+
+	configurationHeaderPrefix = "header:"
+	externalFilePrefix        = "@"
+
+	colorComment         = color.FgGreen
+	colorError           = color.FgRed
+	colorUsage           = color.FgHiCyan
+	colorResponse        = color.FgHiMagenta
+	colorResponseSuccess = color.FgHiGreen
+	colorResponseFailure = color.FgHiRed
+
+	headerContentType = "Content-Type"
+	contentTypeJson   = "application/json"
+
+	responsePrettyPrintBodyDefault = true
+
+	mapSessionKeyName = "session"
+)
