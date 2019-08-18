@@ -24,9 +24,9 @@ func help(txt string) bool {
 
 func usage() {
 	color.Set(colorUsage)
-	defer color.Unset()
-
 	fmt.Println("Usage: ...")
+	color.Unset()
+
 	os.Exit(exitCodeOnUsage)
 }
 
