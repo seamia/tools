@@ -48,4 +48,7 @@ const (
 	mapSessionKeyName    = "session"
 	mapScripFileName     = "script"
 	mapScripFullFileName = "script.full"
+
+	marshalPrefix = ""
+	marshalIndent ="    "
 )

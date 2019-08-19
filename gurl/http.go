@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -84,6 +85,7 @@ func displayResponse(resp *http.Response) {
 			displayPlainBody(data, print)
 		}
 	}
+	// saveResponse(resp)
 }
 
 func displayHeaders(resp *http.Response, print printer.Printer) {
@@ -121,7 +123,7 @@ func displayJsonBody(data []byte, print printer.Printer) {
 	var blank interface{}
 	blank = []interface{}{}
 	if err := json.Unmarshal(data, &blank); err == nil {
-		if pretty, err := json.MarshalIndent(blank, "", "    "); err == nil {
+		if pretty, err := json.MarshalIndent(blank, marshalPrefix, marshalIndent); err == nil {
 			displayPlainBody(pretty, print)
 			return
 		} else {
@@ -133,7 +135,7 @@ func displayJsonBody(data []byte, print printer.Printer) {
 
 	blank = map[string]interface{}{}
 	if err := json.Unmarshal(data, &blank); err == nil {
-		if pretty, err := json.MarshalIndent(blank, "", "    "); err == nil {
+		if pretty, err := json.MarshalIndent(blank, marshalPrefix, marshalIndent); err == nil {
 			displayPlainBody(pretty, print)
 			return
 		} else {
@@ -150,4 +152,39 @@ func attentionNeeded(key string) bool {
 		return true
 	}
 	return false
+}
+
+
+type SavedResponse struct {
+	Response struct{
+		Status string	`json:"status"`
+		StatusCode int	`json:"status-code"`
+		Header http.Header `json:"headers"`
+	}	`json:""`
+	Request struct{
+		Url string 	`json:"url"`
+		Method string 	`json:"method"`
+	}	`json:""`
+}
+
+func saveResponse(resp *http.Response) {
+	if resp == nil {
+		return
+	}
+
+	saved := SavedResponse{}
+	saved.Response.Status = resp.Status
+	saved.Response.StatusCode = resp.StatusCode
+	saved.Response.Header = resp.Header
+
+	saved.Request.Method = resp.Request.Method
+	saved.Request.Url = resp.Request.URL.String()
+
+
+	if data, err := json.MarshalIndent(&saved, marshalPrefix, marshalIndent); err == nil {
+		fmt.Println(string(data))
+	} else {
+		fmt.Println(err)
+	}
+
 }
