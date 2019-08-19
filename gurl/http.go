@@ -154,17 +154,16 @@ func attentionNeeded(key string) bool {
 	return false
 }
 
-
 type SavedResponse struct {
-	Response struct{
-		Status string	`json:"status"`
-		StatusCode int	`json:"status-code"`
-		Header http.Header `json:"headers"`
-	}	`json:""`
-	Request struct{
-		Url string 	`json:"url"`
-		Method string 	`json:"method"`
-	}	`json:""`
+	Response struct {
+		Status     string      `json:"status"`
+		StatusCode int         `json:"status-code"`
+		Header     http.Header `json:"headers"`
+	} `json:""`
+	Request struct {
+		Url    string `json:"url"`
+		Method string `json:"method"`
+	} `json:""`
 }
 
 func saveResponse(resp *http.Response) {
@@ -179,7 +178,6 @@ func saveResponse(resp *http.Response) {
 
 	saved.Request.Method = resp.Request.Method
 	saved.Request.Url = resp.Request.URL.String()
-
 
 	if data, err := json.MarshalIndent(&saved, marshalPrefix, marshalIndent); err == nil {
 		fmt.Println(string(data))

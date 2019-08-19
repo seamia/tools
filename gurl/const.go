@@ -50,5 +50,7 @@ const (
 	mapScripFullFileName = "script.full"
 
 	marshalPrefix = ""
-	marshalIndent ="    "
+	marshalIndent = "    "
+
+	mappingResponseValues = "response:"
 )

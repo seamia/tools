@@ -22,4 +22,6 @@ var (
 	currentCommand    = ""
 
 	responsePrettyPrintBody = responsePrettyPrintBodyDefault
+
+	incrementalCounter int64
 )
