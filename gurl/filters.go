@@ -5,6 +5,7 @@
 package main
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -32,5 +33,32 @@ func preFilter(key string) (bool, string) {
 }
 
 func responseValue(key string) (bool, string) {
+	// global savedResponse []byte
+	if len(savedResponse) == 0 {
+		return false, key
+	}
+
+	var holder map[string]interface{}
+	if err := json.Unmarshal(savedResponse, holder); err != nil {
+		reportError(err, "failed to ingest json from response")
+		return false, key
+	}
+
+	if data, found := holder[key]; found {
+		if txt, okay := data.(string); okay {
+			return true, txt
+		}
+	}
+
+	//last resort
+	key = lower(key)
+	for name, settings := range holder {
+		if lower(name) == key {
+			if txt, okay := settings.(string); okay {
+				return true, txt
+			}
+		}
+	}
+
 	return false, key
 }

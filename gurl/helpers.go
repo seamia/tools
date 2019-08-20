@@ -56,8 +56,10 @@ func quit(format string, a ...interface{}) {
 	os.Exit(exitCodeOnError)
 }
 
-func comment(format string, a ...interface{}) {
-	colorPrint(colorComment, format, a...)
+func comment(allow bool, format string, a ...interface{}) {
+	if allow {
+		colorPrint(colorComment, format, a...)
+	}
 }
 
 func report(format string, a ...interface{}) {
@@ -131,7 +133,12 @@ func loadExternalFile(src string) string {
 	}
 	data, err := ioutil.ReadFile(filename)
 	quitOnError(err, "Opening file [%s]", filename)
-	return string(data)
+
+	txt := string(data)
+	if resolveExternalFiles {
+		txt = expand(txt)
+	}
+	return txt
 }
 
 func dataPointsToExternalFile(src string) (bool, string) {

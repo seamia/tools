@@ -77,6 +77,7 @@ func displayResponse(resp *http.Response) {
 	if resp.Body != nil {
 		data, err := ioutil.ReadAll(resp.Body)
 		quitOnError(err, "Ingesting response body")
+		savedResponse = data
 
 		switch getContentType(resp) {
 		case contentTypeJson:
@@ -84,6 +85,8 @@ func displayResponse(resp *http.Response) {
 		default:
 			displayPlainBody(data, print)
 		}
+	} else {
+		savedResponse = nil
 	}
 	// saveResponse(resp)
 }

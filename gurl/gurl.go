@@ -16,6 +16,7 @@ func main() {
 	if len(os.Args) < 2 || help(filename()) {
 		usage()
 	}
+	printer.Stderr("args: %v", os.Args)
 
 	loadDefaults()
 
@@ -24,7 +25,7 @@ func main() {
 	data, err := ioutil.ReadFile(filename())
 	quitOnError(err, "Opening file %s", filename())
 
-	comment("Processing file %s", filename())
+	comment(echoProgress, "Processing file %s", filename())
 	currentFile = filename()
 	processScript(string(data))
 

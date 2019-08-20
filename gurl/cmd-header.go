@@ -7,7 +7,7 @@ package main
 import "strings"
 
 func processHeader(params string) {
-	comment("HEADER command: %s", params)
+	comment(echoHeaderCommand, "HEADER command: %s", params)
 
 	// do not expand the header's value - do it right before the call
 	key, value := split(params)

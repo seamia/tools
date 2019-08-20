@@ -4,17 +4,22 @@
 
 package main
 
-import (
-	"github.com/fatih/color"
-)
-
 func processSet(params string) {
-	comment("SET command: %s", params)
+	comment(echoSetCommand, "SET command: %s", params)
 	key, value := split(expand(params))
+
+	for name, dial := range dials {
+		if lower(key) == name {
+			*dial = getBoolean(value, fallbackForUnknowBinaryState)
+			return
+		}
+	}
 
 	switch lower(key) {
 	case "baseurl":
 		baseUrl = value
+
+	/*
 	case "producecurl":
 		generateCurlCommands = getBoolean(value, true)
 	case "prettyprintbody":
@@ -23,6 +28,8 @@ func processSet(params string) {
 		color.NoColor = true // disables colorized output
 	case "color":
 		color.NoColor = false
+	*/
+
 	default:
 		quit("Unknown SET: [%s]", key)
 	}

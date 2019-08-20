@@ -5,7 +5,7 @@
 package main
 
 func processPost(params string) {
-	comment("POST command: %s", params)
+	comment(echoPostCommand, "POST command: %s", params)
 	relativeUrl, payload := split(expand(params))
 	call(relativeUrl, "POST", payload)
 }

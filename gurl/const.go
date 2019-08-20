@@ -27,6 +27,7 @@ const (
 	printResponseHeadersDefault = true
 	generateCurlCommandsDefault = false
 	collectTimingInfoDefault    = false
+	resolveExternalFilesDefault = true
 
 	configurationHeaderPrefix = "header:"
 	externalFilePrefix        = "@"
@@ -44,6 +45,7 @@ const (
 	headerAttentionSuffix = "-error"
 
 	responsePrettyPrintBodyDefault = true
+	fallbackForUnknowBinaryState = false
 
 	mapSessionKeyName    = "session"
 	mapScripFileName     = "script"
@@ -53,4 +55,6 @@ const (
 	marshalIndent = "    "
 
 	mappingResponseValues = "response:"
+
+	echoDefault = false
 )

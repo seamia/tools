@@ -5,7 +5,7 @@
 package main
 
 func processMap(params string) {
-	comment("MAP command: %s", params)
+	comment(echoMapCommand, "MAP command: %s", params)
 	key, value := split(expand(params))
 	resolver.Add(key, value)
 }

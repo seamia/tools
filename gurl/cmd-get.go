@@ -5,6 +5,6 @@
 package main
 
 func processGet(params string) {
-	comment("GET command: %s", params)
+	comment(echoGetCommand, "GET command: %s", params)
 	call(params, "GET", "")
 }
