@@ -1,0 +1,51 @@
+#!/usr/local/bin/gurl
+
+# put comment here...
+
+/*
+	or here
+*/
+
+# set mappings 
+MAP user Name-${USER}
+MAP token 1111-2222-3333-4444-5555-6666
+MAP origin https://seamia.net
+
+# configure parameters
+Set BaseUrl https://seamia.net/gurl
+Set generate.curl.commands nope
+
+# execute http requests
+GET /healthcheck
+
+# declare/set headers to be sent with the requests
+Header MM-authorization: Bearer ${token}
+Header origin: ${origin}
+Header referrer: ${origin}
+Header User-Agent gurl/${USER}/${script}
+
+# employ build-in "functions"
+Echo random: ${random}	# in-line comment
+Echo increment: ${increment} # increasing number
+Echo session: ${session} # unique.id that stays the same during execution of the script
+Echo response-one: ${response:response/one} # use value from previous operations
+
+Header MM-Correlation-Id gurl-${user}-${session}
+
+# POST /v1/entities @creator.post.json
+
+GET /v1/entities
+
+MAP entity Fake-entity-ID
+GET /v1/entities/${entity}/operation
+
+POST /v1/entities/${entity}/operation @create.operation.json
+
+PATCH /v1/entities/${entity}/operation @update.operation.json
+
+# DELETE /v1/entities/${entity}/operation
+
+# DELETE /v1/entities/${entity}/operation/${email}
+
+
+GET /v1/operation

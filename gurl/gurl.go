@@ -70,6 +70,9 @@ func processScript(script string) {
 		if strings.HasPrefix(line, commentPrefix) {
 			continue
 		}
+		if pound := strings.Index(line, commentPrefix); pound > 0 {
+			line = strings.TrimSpace(line[:pound])
+		}
 
 		if len(line) == 0 {
 			processCommand(strings.Join(command, " "))
