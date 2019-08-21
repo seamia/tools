@@ -8,15 +8,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/rs/xid"
 )
 
 func loadDefaults() {
+
+	// init RNG
+	rand.Seed(time.Now().UnixNano())
 
 	// add runtime-based resolutions
 	resolver.Add(mapSessionKeyName, xid.New().String())
@@ -40,7 +45,7 @@ func loadDefaults() {
 		return
 	}
 
-	var settings map[string]interface{}
+	var settings msi
 	if err := json.Unmarshal(data, &settings); err != nil {
 		reportError(err, "Parsing content of [%s]", location)
 	}

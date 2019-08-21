@@ -20,14 +20,14 @@ func processSet(params string) {
 		baseUrl = value
 
 	/*
-	case "producecurl":
-		generateCurlCommands = getBoolean(value, true)
-	case "prettyprintbody":
-		responsePrettyPrintBody = getBoolean(value, responsePrettyPrintBodyDefault)
-	case "nocolor":
-		color.NoColor = true // disables colorized output
-	case "color":
-		color.NoColor = false
+		case "producecurl":
+			generateCurlCommands = getBoolean(value, true)
+		case "prettyprintbody":
+			responsePrettyPrintBody = getBoolean(value, responsePrettyPrintBodyDefault)
+		case "nocolor":
+			color.NoColor = true // disables colorized output
+		case "color":
+			color.NoColor = false
 	*/
 
 	default:

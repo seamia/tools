@@ -124,7 +124,7 @@ func displayJsonBody(data []byte, print printer.Printer) {
 	}
 
 	var blank interface{}
-	blank = []interface{}{}
+	blank = slice{}
 	if err := json.Unmarshal(data, &blank); err == nil {
 		if pretty, err := json.MarshalIndent(blank, marshalPrefix, marshalIndent); err == nil {
 			displayPlainBody(pretty, print)
@@ -136,7 +136,7 @@ func displayJsonBody(data []byte, print printer.Printer) {
 		reportError(err, "unmarshalling")
 	}
 
-	blank = map[string]interface{}{}
+	blank = msi{}
 	if err := json.Unmarshal(data, &blank); err == nil {
 		if pretty, err := json.MarshalIndent(blank, marshalPrefix, marshalIndent); err == nil {
 			displayPlainBody(pretty, print)

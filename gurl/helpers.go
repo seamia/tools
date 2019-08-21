@@ -23,6 +23,7 @@ func help(txt string) bool {
 func usage() {
 	color.Set(colorUsage)
 	fmt.Println("Usage: gurl script.gurl")
+	fmt.Println(versionInfo)
 	color.Unset()
 
 	os.Exit(exitCodeOnUsage)
@@ -66,6 +67,10 @@ func report(format string, a ...interface{}) {
 	colorPrint(colorComment, format, a...)
 }
 
+func debug(format string, a ...interface{}) {
+	colorPrint(colorDebug, format, a...)
+}
+
 func response(format string, a ...interface{}) {
 	colorPrint(colorResponse, format, a...)
 }
@@ -100,12 +105,16 @@ func expand(from string) string {
 }
 
 func split(src string) (string, string) {
+	return splitBy(src, wordSeparator)
+}
+
+func splitBy(src, separator string) (string, string) {
 	cmd, payload := src, ""
-	if index := strings.IndexAny(src, wordSeparator); index > 0 {
+	if index := strings.IndexAny(src, separator); index > 0 {
 		cmd = src[:index]
 		payload = strings.TrimSpace(src[index:])
 	}
-	return cmd, payload
+	return strings.TrimSpace(cmd), payload
 }
 
 func multiLineCommand(cmd string) bool {

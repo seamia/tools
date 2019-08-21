@@ -43,12 +43,28 @@ func processScript(script string) {
 	}
 
 	command := []string{}
+	insideCommentBlock := false
+
 	for lineNumber, line := range lines {
 		currentLineNumber = lineNumber + offset
 
 		// ignore whitespace
 		line = strings.TrimLeft(line, leadingWhiteSpace)
 		line = strings.TrimRight(line, trainingWhiteSpace)
+
+		if insideCommentBlock {
+			if strings.HasSuffix(line, "*/") {
+				insideCommentBlock = false
+			}
+			continue
+		}
+
+		if strings.HasPrefix(line, "/*") {
+			if !strings.HasSuffix(line, "*/") {
+				insideCommentBlock = true
+			}
+			continue
+		}
 
 		// ignore comments
 		if strings.HasPrefix(line, commentPrefix) {
@@ -85,23 +101,25 @@ func processCommand(command string) {
 
 	currentCommand = command
 	cmd, payload := split(command)
-
-	switch lower(cmd) {
-	case "set":
-		processSet(payload)
-	case "map":
-		processMap(payload)
-	case "header":
-		processHeader(payload)
-	case "get":
-		processGet(payload)
-	case "patch":
-		processPatch(payload)
-	case "post":
-		processPost(payload)
-	default:
+	if handler, found := handlers[lower(cmd)]; found {
+		handler(payload)
+	} else {
 		quit("Unknown command [%s]", cmd)
 	}
 
 	// fmt.Println("========", command)
+}
+
+type cmdHandler func(params string)
+
+var handlers = map[string]cmdHandler{
+	"set":     processSet,
+	"map":     processMap,
+	"header":  processHeader,
+	"get":     processGet,
+	"patch":   processPatch,
+	"post":    processPost,
+	"echo":    processEcho,
+	"require": processRequire,
+	"load":    processLoad,
 }

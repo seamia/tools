@@ -11,31 +11,30 @@ const (
 	exitCodeOnUsage   = 3
 	exitCodeOnSuccess = 1
 
-	lineSeparator = "\n"
-	wordSeparator = " \t"
-	shebang       = "#!/"
+	lineSeparator  = "\n"
+	wordSeparator  = " \t"
+	shebang        = "#!/"
+	itemsSeparator = "/"
 
 	leadingWhiteSpace  = " \t"
 	trainingWhiteSpace = " \t\r\n"
 
-	commentPrefix = "#"
-
-	userAgent = "seamia/gurl"
-
-	envDefaultsLocation = "GURL_DEFAULT_SETTINGS"
+	commentPrefix             = "#"
+	userAgent                 = "seamia/gurl"
+	envDefaultsLocation       = "GURL_DEFAULT_SETTINGS"
+	configurationHeaderPrefix = "header:"
+	externalFilePrefix        = "@"
 
 	printResponseHeadersDefault = true
 	generateCurlCommandsDefault = false
 	collectTimingInfoDefault    = false
 	resolveExternalFilesDefault = true
 
-	configurationHeaderPrefix = "header:"
-	externalFilePrefix        = "@"
-
 	colorComment           = color.FgGreen
 	colorError             = color.FgRed
 	colorUsage             = color.FgHiCyan
 	colorResponse          = color.FgHiMagenta
+	colorDebug             = color.FgMagenta
 	colorResponseSuccess   = color.FgHiGreen
 	colorResponseFailure   = color.FgHiRed
 	colorResponseAttention = color.FgYellow
@@ -45,16 +44,19 @@ const (
 	headerAttentionSuffix = "-error"
 
 	responsePrettyPrintBodyDefault = true
-	fallbackForUnknowBinaryState = false
+	fallbackForUnknowBinaryState   = false
 
 	mapSessionKeyName    = "session"
 	mapScripFileName     = "script"
 	mapScripFullFileName = "script.full"
+
+	includeAllKey = "*"
 
 	marshalPrefix = ""
 	marshalIndent = "    "
 
 	mappingResponseValues = "response:"
 
-	echoDefault = false
+	echoDefault  = true
+	indexInvalid = -1
 )

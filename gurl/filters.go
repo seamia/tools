@@ -38,27 +38,43 @@ func responseValue(key string) (bool, string) {
 		return false, key
 	}
 
-	var holder map[string]interface{}
-	if err := json.Unmarshal(savedResponse, holder); err != nil {
+	// handle special cases here:
+	if key == includeAllKey {
+		return true, string(savedResponse)
+	}
+
+	var holder interface{}
+	if err := json.Unmarshal(savedResponse, &holder); err != nil {
 		reportError(err, "failed to ingest json from response")
 		return false, key
 	}
+	return resolveAny(holder, key)
 
-	if data, found := holder[key]; found {
-		if txt, okay := data.(string); okay {
-			return true, txt
+	/*
+		var holder msi
+		if err := json.Unmarshal(savedResponse, &holder); err != nil {
+			reportError(err, "failed to ingest json from response")
+			return false, key
 		}
-	}
 
-	//last resort
-	key = lower(key)
-	for name, settings := range holder {
-		if lower(name) == key {
-			if txt, okay := settings.(string); okay {
+
+
+		if data, found := holder[key]; found {
+			if txt, okay := data.(string); okay {
 				return true, txt
 			}
 		}
-	}
 
-	return false, key
+		//last resort ...
+		key = lower(key)
+		for name, settings := range holder {
+			if lower(name) == key {
+				if txt, okay := settings.(string); okay {
+					return true, txt
+				}
+			}
+		}
+
+		return false, key
+	*/
 }

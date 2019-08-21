@@ -16,14 +16,17 @@ var (
 	collectTimingInfo    = collectTimingInfoDefault
 	resolveExternalFiles = resolveExternalFilesDefault
 
-	echoProgress = echoDefault
-	echoMapCommand = echoDefault
-	echoSetCommand = echoDefault
-	echoGetCommand = echoDefault
-	echoPostCommand = echoDefault
-	echoPatchCommand = echoDefault
-	echoDeleteCommand = echoDefault
-	echoHeaderCommand = echoDefault
+	echoProgress       = echoDefault
+	echoMapCommand     = echoDefault
+	echoSetCommand     = echoDefault
+	echoGetCommand     = echoDefault
+	echoPostCommand    = echoDefault
+	echoPatchCommand   = echoDefault
+	echoDeleteCommand  = echoDefault
+	echoHeaderCommand  = echoDefault
+	echoEchoCommand    = true
+	echoRequireCommand = echoDefault
+	echoLoadCommand    = echoDefault
 
 	resolver = resolve.New()
 
@@ -36,22 +39,29 @@ var (
 	incrementalCounter int64
 )
 
+const (
+	echoPrefix = "echo."
+)
+
 var (
 	dials = map[string]*bool{
 		"print.response.headers": &printResponseHeaders,
 		"generate.curl.commands": &generateCurlCommands,
 		"collect.timing.info":    &collectTimingInfo,
 		"resolve.external.files": &resolveExternalFiles,
-		"pretty.print.body": &responsePrettyPrintBody,
+		"pretty.print.body":      &responsePrettyPrintBody,
 
-		"echo.map": &echoMapCommand,
-		"echo.set": &echoSetCommand,
-		"echo.get": &echoGetCommand,
-		"echo.post": &echoPostCommand,
-		"echo.patch": &echoPatchCommand,
-		"echo.delete": &echoDeleteCommand,
-		"echo.header": &echoHeaderCommand,
-		"echo.progress": &echoProgress,
+		echoPrefix + "map":      &echoMapCommand,
+		echoPrefix + "set":      &echoSetCommand,
+		echoPrefix + "get":      &echoGetCommand,
+		echoPrefix + "post":     &echoPostCommand,
+		echoPrefix + "patch":    &echoPatchCommand,
+		echoPrefix + "delete":   &echoDeleteCommand,
+		echoPrefix + "header":   &echoHeaderCommand,
+		echoPrefix + "progress": &echoProgress,
+		echoPrefix + "echo":     &echoEchoCommand,
+		echoPrefix + "require":  &echoRequireCommand,
+		echoPrefix + "load":     &echoLoadCommand,
 	}
 )
 
