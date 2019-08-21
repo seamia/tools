@@ -38,7 +38,7 @@
     "printer",
     "resolve"
   ]
-  revision = "417ff10567371104d227bc5c0d8045df3c903378"
+  revision = "b2c2426ca7984f637838452af2ef46e599a0b449"
 
 [[projects]]
   branch = "master"
