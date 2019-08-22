@@ -16,7 +16,7 @@ func main() {
 	if len(os.Args) < 2 || help(filename()) {
 		usage()
 	}
-	printer.Stderr("args: %v", os.Args)
+	debug("args: %v, %v", len(os.Args), os.Args)
 
 	loadDefaults()
 
@@ -26,6 +26,7 @@ func main() {
 	quitOnError(err, "Opening file %s", filename())
 
 	comment(echoProgress, "Processing file %s", filename())
+	generate("# generating curls commands from %s", filename())
 	currentFile = filename()
 	processScript(string(data))
 

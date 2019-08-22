@@ -8,4 +8,9 @@ func processMap(params string) {
 	comment(echoMapCommand, "MAP command: %s", params)
 	key, value := split(expand(params))
 	resolver.Add(key, value)
+
+	if offline() {
+		generate("%s=%s", key, value)
+	}
+
 }

@@ -160,3 +160,9 @@ func dataPointsToExternalFile(src string) (bool, string) {
 func lower(src string) string {
 	return strings.ToLower(src)
 }
+
+func generate(format string, a ...interface{}) {
+	if offline() {
+		_, _ = fmt.Fprintf(os.Stdout, ""+format+"\n", a...)
+	}
+}

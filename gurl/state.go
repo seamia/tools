@@ -46,7 +46,7 @@ const (
 var (
 	dials = map[string]*bool{
 		"print.response.headers": &printResponseHeaders,
-		"generate.curl.commands": &generateCurlCommands,
+		//	"generate.curl.commands": &generateCurlCommands,
 		"collect.timing.info":    &collectTimingInfo,
 		"resolve.external.files": &resolveExternalFiles,
 		"pretty.print.body":      &responsePrettyPrintBody,
@@ -68,3 +68,7 @@ var (
 var (
 	savedResponse []byte
 )
+
+func offline() bool {
+	return generateCurlCommands
+}

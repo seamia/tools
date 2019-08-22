@@ -5,5 +5,8 @@
 package main
 
 func processEcho(params string) {
+	if offline() {
+		return
+	}
 	comment(echoEchoCommand, "ECHO: %s", expand(params))
 }

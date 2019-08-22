@@ -5,17 +5,13 @@
 package main
 
 import (
-	"os"
 	"strings"
-
-	"github.com/golang/go/src/pkg/fmt"
 )
 
 func produceCurlCommand(fullUrl, verb, data string) {
-	printer := func(format string, a ...interface{}) {
-		_, _ = fmt.Fprintf(os.Stdout, ""+format+"\n", a...)
-	}
+	printer := generate
 
+	printer("# %s %s", verb, fullUrl)
 	printer("curl \\")
 	if len(curlOptions) > 0 {
 		printer("  %s \\", curlOptions)
@@ -38,5 +34,5 @@ func produceCurlCommand(fullUrl, verb, data string) {
 			printer("   --data '%s'", data)
 		}
 	}
-
+	printer("")
 }

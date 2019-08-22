@@ -31,6 +31,7 @@ func loadDefaults() {
 		resolver.Add(mapScripFullFileName, fullpath)
 	}
 	setResolverFilters()
+	processCmdLine()
 
 	// attempt to locate and load the defaults config file
 	location := os.Getenv(envDefaultsLocation)
@@ -60,7 +61,8 @@ func loadDefaults() {
 		case "print.response.headers":
 			printResponseHeaders = getBoolean(txt, printResponseHeadersDefault)
 		case "generate.curl.commands":
-			generateCurlCommands = getBoolean(txt, generateCurlCommandsDefault)
+			debug("ignoring[%s]", key)
+			// generateCurlCommands = getBoolean(txt, generateCurlCommandsDefault)
 		case "collect.timing.info":
 			collectTimingInfo = getBoolean(txt, collectTimingInfoDefault)
 		case "color":
@@ -74,4 +76,30 @@ func loadDefaults() {
 		}
 	}
 	report("loaded default settings from %s", location)
+}
+
+func processCmdLine() {
+	// generateCurlCommands
+
+	if len(os.Args) > 2 {
+		for i := 2; i < len(os.Args); i++ {
+			param := os.Args[i]
+			switch lower(param) {
+			case "-curl":
+				generateCurlCommands = true
+
+				// turn off extra reporting:
+				echoHeaderCommand = false
+				echoMapCommand = false
+				echoGetCommand = false
+				echoPostCommand = false
+				echoPatchCommand = false
+				echoDeleteCommand = false
+
+				debug("enabling curl commands generations")
+			default:
+				debug("don't know how to handle param [%s]", param)
+			}
+		}
+	}
 }

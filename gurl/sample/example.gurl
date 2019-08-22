@@ -13,7 +13,6 @@ MAP origin https://seamia.net
 
 # configure parameters
 Set BaseUrl https://seamia.net/gurl
-Set generate.curl.commands nope
 
 # execute http requests
 GET /healthcheck

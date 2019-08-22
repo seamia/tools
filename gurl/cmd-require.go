@@ -7,6 +7,10 @@ package main
 // Require ${response:status} HEALTHY
 
 func processRequire(params string) {
+	if offline() {
+		debug("REQUIRE has no effect in offline mode.")
+		return
+	}
 	comment(echoRequireCommand, "REQUIRE: %s", params)
 
 	left, right := split(params)
