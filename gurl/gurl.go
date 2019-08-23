@@ -18,9 +18,12 @@ func main() {
 	}
 	debug("args: %v, %v", len(os.Args), os.Args)
 
+	// todo: del this
+	os.Setenv("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjb20ubWFnaWNsZWFwLndlYi5kZXZlbG9wZXIiLCJleHAiOjE1NjY1MTU2MzIsImp0aSI6IjRka3kyamszZG03cjFxM3MiLCJpYXQiOjE1NjY1MTIwMzIsImlzcyI6Imh0dHBzOi8vYXV0aC5kZXYubWFnaWNsZWFwLmJsdWUiLCJzdWIiOiJ1cy1lYXN0LTE6MDBiMzJkNGQtNmU3MC00NmViLTljMTgtNDI4Y2FiNzFhZWI3IiwidG9rZW5fdXNlIjoiYWNjZXNzIiwiY2xpZW50X2lkIjoiY29tLm1hZ2ljbGVhcC53ZWIuZGV2ZWxvcGVyIiwic2NvcGUiOlsic3NvOnplbmRlc2siLCJjb2duaXRvIiwicGhvbmUiLCJlbWFpbCIsInByb2ZpbGUiXSwicnRpZCI6IjFjZmUwNGExLTJjN2UtNDg3Yy1hODg2LTYxMDI5MGM0YWM3ZSIsInN0eXAiOiJ1c2VyIn0.ZHucmolVM0ltS484xPMDzL8nsjpcUDVLe_-YLZv-HwM")
+
 	loadDefaults()
 
-	printer.Set(printer.Stderr) // todo: revisit this
+	printer.Set(debug) // todo: revisit this
 
 	data, err := ioutil.ReadFile(filename())
 	quitOnError(err, "Opening file %s", filename())
@@ -104,26 +107,32 @@ func processCommand(command string) {
 	}
 
 	currentCommand = command
-	cmd, payload := split(command)
+	fullcmd, payload := split(command)
+	cmd, options := splitBy(fullcmd, ":")
+
 	if handler, found := handlers[lower(cmd)]; found {
-		handler(payload)
+		handler(payload, options)
 	} else {
-		quit("Unknown command [%s]", cmd)
+		quit("Unknown command [%s]", fullcmd)
 	}
 
 	// fmt.Println("========", command)
 }
 
-type cmdHandler func(params string)
+type cmdHandler func(params, options string)
 
 var handlers = map[string]cmdHandler{
-	"set":     processSet,
-	"map":     processMap,
-	"header":  processHeader,
-	"get":     processGet,
-	"patch":   processPatch,
-	"post":    processPost,
+	"set":    processSet,
+	"map":    processMap,
+	"header": processHeader,
+
+	"get":    processGet,
+	"patch":  processPatch,
+	"post":   processPost,
+	"delete": processDelete,
+
 	"echo":    processEcho,
 	"require": processRequire,
 	"load":    processLoad,
+	"section": processSection,
 }

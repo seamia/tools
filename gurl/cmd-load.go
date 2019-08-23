@@ -15,7 +15,7 @@ import (
 
 // Require ${response:status} HEALTHY
 
-func processLoad(params string) {
+func processLoad(params, options string) {
 	comment(echoLoadCommand, "LOAD: %s", params)
 
 	parts := strings.Split(params, " ")

@@ -4,9 +4,16 @@
 
 package main
 
-func processEcho(params string) {
+func processEcho(params, options string) {
 	if offline() {
 		return
 	}
 	comment(echoEchoCommand, "ECHO: %s", expand(params))
+}
+
+func processSection(params, options string) {
+	if offline() {
+		return
+	}
+	section(echoSectionCommand, "%s", expand(params))
 }

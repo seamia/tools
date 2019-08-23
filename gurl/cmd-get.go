@@ -4,7 +4,7 @@
 
 package main
 
-func processGet(params string) {
+func processGet(params, options string) {
 	comment(echoGetCommand, "GET command: %s", params)
 	call(params, "GET", "")
 }

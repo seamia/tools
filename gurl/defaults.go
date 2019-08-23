@@ -85,6 +85,13 @@ func processCmdLine() {
 		for i := 2; i < len(os.Args); i++ {
 			param := os.Args[i]
 			switch lower(param) {
+			case "-silent":
+				goSilent()
+
+			case "-debug":
+				// enable debug features here
+				echoDebug = true
+
 			case "-curl":
 				generateCurlCommands = true
 
@@ -102,4 +109,13 @@ func processCmdLine() {
 			}
 		}
 	}
+}
+
+func goSilent() {
+	debug("switching to silent mode")
+	echoSilent = true
+}
+
+func isSilent() bool {
+	return echoSilent
 }

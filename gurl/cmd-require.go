@@ -6,7 +6,7 @@ package main
 
 // Require ${response:status} HEALTHY
 
-func processRequire(params string) {
+func processRequire(params, options string) {
 	if offline() {
 		debug("REQUIRE has no effect in offline mode.")
 		return
@@ -16,6 +16,15 @@ func processRequire(params string) {
 	left, right := split(params)
 	eleft := expand(left)
 	eright := expand(right)
+
+	// handle special case here, when mere existence was required
+	if len(right) == 0 {
+		if len(left) != 0 && len(eleft) == 0 {
+			quit("failed required condition: [%s] is not empty", left)
+		}
+		comment(echoProgress, "Require passed: [%s] is not empty", left)
+		return
+	}
 
 	if eleft != eright {
 		if lower(eleft) != lower(eright) {

@@ -16,6 +16,8 @@ var (
 	collectTimingInfo    = collectTimingInfoDefault
 	resolveExternalFiles = resolveExternalFilesDefault
 
+	echoSilent         = false
+	echoDebug          = false
 	echoProgress       = echoDefault
 	echoMapCommand     = echoDefault
 	echoSetCommand     = echoDefault
@@ -27,6 +29,7 @@ var (
 	echoEchoCommand    = true
 	echoRequireCommand = echoDefault
 	echoLoadCommand    = echoDefault
+	echoSectionCommand = echoDefault
 
 	resolver = resolve.New()
 

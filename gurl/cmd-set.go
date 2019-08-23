@@ -4,7 +4,7 @@
 
 package main
 
-func processSet(params string) {
+func processSet(params, options string) {
 	comment(echoSetCommand, "SET command: %s", params)
 	key, value := split(expand(params))
 

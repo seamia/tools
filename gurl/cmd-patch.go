@@ -4,7 +4,7 @@
 
 package main
 
-func processPatch(params string) {
+func processPatch(params, options string) {
 	comment(echoPatchCommand, "PATCH command: %s", params)
 	relativeUrl, payload := split(expand(params))
 	call(relativeUrl, "PATCH", payload)

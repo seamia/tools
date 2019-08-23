@@ -4,9 +4,20 @@
 
 package main
 
-func processMap(params string) {
+import "net/url"
+
+func processMap(params, options string) {
 	comment(echoMapCommand, "MAP command: %s", params)
 	key, value := split(expand(params))
+
+	if len(options) > 0 {
+		if lower(options) == "encode" {
+			value = url.QueryEscape(value)
+		} else {
+			quit("unknown options: %s", options)
+		}
+	}
+
 	resolver.Add(key, value)
 
 	if offline() {

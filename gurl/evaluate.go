@@ -20,6 +20,10 @@ func evalContains(left, right string) bool {
 	return strings.Index(left, right) != -1
 }
 
+func evalNotContains(left, right string) bool {
+	return !evalContains(left, right)
+}
+
 func evalSuffix(left, right string) bool {
 	return strings.HasSuffix(left, right)
 }
@@ -42,9 +46,13 @@ func hasFieldValue(what interface{}, field, looking4 string, compare Evaluate) b
 }
 
 var evaluateMap = map[string]Evaluate{
+
+	// the key in this map MUST have "=" in it
+
 	"==": evalEqual,
 	"!=": evalNotEqual,
-	"=|": evalContains,
+	"<=": evalContains,    // < =
+	"=>": evalNotContains, // = >
 	"=(": evalPrefix,
 	"=)": evalSuffix,
 }

@@ -58,8 +58,15 @@ func quit(format string, a ...interface{}) {
 }
 
 func comment(allow bool, format string, a ...interface{}) {
-	if allow {
+	if allow && !isSilent() {
 		colorPrint(colorComment, format, a...)
+	}
+}
+
+func section(allow bool, format string, a ...interface{}) {
+	const highlight = "================================================= "
+	if allow && !isSilent() {
+		colorPrint(colorSection, highlight+format, a...)
 	}
 }
 
@@ -68,7 +75,9 @@ func report(format string, a ...interface{}) {
 }
 
 func debug(format string, a ...interface{}) {
-	colorPrint(colorDebug, format, a...)
+	if echoDebug {
+		colorPrint(colorDebug, format, a...)
+	}
 }
 
 func response(format string, a ...interface{}) {
@@ -76,7 +85,9 @@ func response(format string, a ...interface{}) {
 }
 
 func responseSuccess(format string, a ...interface{}) {
-	colorPrint(colorResponseSuccess, format, a...)
+	if !isSilent() {
+		colorPrint(colorResponseSuccess, format, a...)
+	}
 }
 func responseFailure(format string, a ...interface{}) {
 	colorPrint(colorResponseFailure, format, a...)
@@ -85,11 +96,19 @@ func responseAttention(format string, a ...interface{}) {
 	colorPrint(colorResponseAttention, format, a...)
 }
 
-func colorPrint(clr color.Attribute, format string, a ...interface{}) {
-	color.Set(clr)
-	defer color.Unset()
+func colorPrint(clr interface{}, format string, a ...interface{}) {
+	switch actual := clr.(type) {
+	case color.Attribute:
+		color.Set(actual)
+	case []color.Attribute:
+		color.Set(actual...)
+	default:
+		debug("unhandled type %v", actual)
+	}
 
-	_, _ = fmt.Fprintf(os.Stdout, format+"\n", a...)
+	_, _ = fmt.Fprintf(os.Stdout, format, a...)
+	color.Unset()
+	_, _ = fmt.Fprintf(os.Stdout, "\n")
 }
 
 func filename() string {
@@ -112,7 +131,7 @@ func splitBy(src, separator string) (string, string) {
 	cmd, payload := src, ""
 	if index := strings.IndexAny(src, separator); index > 0 {
 		cmd = src[:index]
-		payload = strings.TrimSpace(src[index:])
+		payload = strings.TrimSpace(src[index+1:])
 	}
 	return strings.TrimSpace(cmd), payload
 }

@@ -6,7 +6,7 @@ package main
 
 import "strings"
 
-func processHeader(params string) {
+func processHeader(params, options string) {
 	comment(echoHeaderCommand, "HEADER command: %s", params)
 
 	// do not expand the header's value - do it right before the call

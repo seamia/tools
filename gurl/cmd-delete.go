@@ -4,4 +4,7 @@
 
 package main
 
-const versionInfo = "version 1.7.8 (2:00 pm)"
+func processDelete(params, options string) {
+	comment(echoDeleteCommand, "DELETE command: %s", params)
+	call(params, "DELETE", "")
+}

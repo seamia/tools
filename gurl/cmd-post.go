@@ -4,7 +4,7 @@
 
 package main
 
-func processPost(params string) {
+func processPost(params, options string) {
 	comment(echoPostCommand, "POST command: %s", params)
 	relativeUrl, payload := split(expand(params))
 	call(relativeUrl, "POST", payload)

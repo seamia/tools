@@ -6,6 +6,8 @@
 	or here
 */
 
+GET /info
+
 # set mappings 
 MAP user Name-${USER}
 MAP token 1111-2222-3333-4444-5555-6666

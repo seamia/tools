@@ -60,3 +60,7 @@ const (
 	echoDefault  = true
 	indexInvalid = -1
 )
+
+var (
+	colorSection = []color.Attribute{color.FgHiWhite, color.BgBlack}
+)
