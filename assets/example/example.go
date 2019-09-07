@@ -21,7 +21,7 @@ func main() {
 
 func populateMux(mux *httptreemux.ContextMux) {
 	mux.GET("/", constructHandler("/home.html"))
-	mux.GET("/infi", constructTemplateHandler("/two.html", process))
+	mux.GET("/info", constructTemplateHandler("/two.html", process))
 }
 
 func constructHandler(name string) http.HandlerFunc {
