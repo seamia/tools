@@ -5,9 +5,11 @@
 package assets
 
 import (
+	"bytes"
 	"compress/gzip"
 	"errors"
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
@@ -35,7 +37,7 @@ func Assign(assets AssetRoot) {
 	if g_staticAssets == nil || len(g_staticAssets) == 0 {
 		g_staticAssets = assets
 	} else {
-		for k,v := range assets {
+		for k, v := range assets {
 			g_staticAssets[k] = v
 		}
 	}
@@ -57,6 +59,62 @@ func Open(name string) (io.ReadCloser, error) {
 		return ioutil.NopCloser(strings.NewReader(f.Data)), nil
 	}
 	return gzip.NewReader(strings.NewReader(f.Data))
+}
+
+func OpenSeeker(name string, expansion interface{}) (io.ReadSeeker, error) {
+
+	// normalize the name (remove Uri prefix)
+	if strings.HasPrefix(name, AssetUriPrefix) {
+		name = name[len(AssetUriPrefix):]
+	}
+
+	f, ok := g_staticAssets[name]
+	if !ok {
+		return nil, fmt.Errorf("Asset %s not found", name)
+	}
+
+	var data []byte = []byte(f.Data)
+	if f.Size > 0 {
+		reader, err := gzip.NewReader(strings.NewReader(f.Data))
+		if err != nil {
+			return nil, err
+		}
+		data = make([]byte, f.Size)
+		read, err := reader.Read(data)
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+		if int64(read) != f.Size {
+			return nil, fmt.Errorf("failed to decompress expected data size. got %v instead of %v", read, f.Size)
+		}
+	}
+
+	var err error
+	if data, err = substitute(data, name, expansion); err != nil {
+		return nil, err
+	}
+
+	return CreateReader(data)
+}
+
+func substitute(data []byte, name string, expansion interface{}) ([]byte, error) {
+	if expansion == nil {
+		// nothing to expand with
+		return data, nil
+	}
+
+	// Create a new template and parse the letter into it.
+	templ, err := template.New(name).Parse(string(data))
+	if err != nil {
+		return nil, err
+	}
+
+	var rendered bytes.Buffer
+	if err := templ.Execute(&rendered, expansion); err != nil {
+		return nil, err
+	}
+
+	return rendered.Bytes(), nil
 }
 
 func exists(filePath string) (exists bool) {
@@ -151,7 +209,7 @@ func IsAssetFile(name string) bool {
 	if g_staticAssets != nil && len(g_staticAssets) > 0 {
 		if strings.HasPrefix(name, AssetUriPrefix) {
 			assetName := name[len(AssetUriPrefix):]
-			if _,found := g_staticAssets[assetName]; found {
+			if _, found := g_staticAssets[assetName]; found {
 				return true
 			}
 		}

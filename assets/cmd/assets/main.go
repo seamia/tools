@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/golang/go/src/pkg/io/ioutil"
 	"github.com/seamia/tools/assets"
 	"os"
 )
@@ -22,18 +23,37 @@ func readLines(path string) ([]string, error) {
 	var lines []string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		lines = append(lines, expand(scanner.Text()))
 	}
 	return lines, scanner.Err()
 }
 
+
+func expand(from string) string {
+	return os.ExpandEnv(from)
+}
+
+func getHeader(headerName string) (string, error) {
+	fileName := expand(headerName)
+	if len(fileName) == 0 {
+		return "", nil
+	}
+	data, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return "", err
+	}
+	txt := expand(string(data))
+	return txt, nil
+}
+
 func main() {
 
-	var listOfFiles, root, destination, packageName string
+	var listOfFiles, root, destination, packageName, headerName string
 	flag.StringVar(&listOfFiles, "src", "", "Name of the file where files to be included are listed")
 	flag.StringVar(&root, "root", "", "Path to be considered as root (within included files)")
 	flag.StringVar(&destination, "output", "staticAssets.go", "Name of the output file")
 	flag.StringVar(&packageName, "package", "main", "Name of the package to be used in the generated file")
+	flag.StringVar(&headerName, "header", "", "Name of the file to be used as a header in the generated file")
 	flag.Parse()
 
 	if len(listOfFiles) == 0 {
@@ -43,14 +63,22 @@ func main() {
 		return
 	}
 
-	filenames, err := readLines(listOfFiles)
+	filenames, err := readLines(expand(listOfFiles))
 	if err != nil {
-		fmt.Println("Failed to process the list of files")
+		fmt.Fprint(os.Stderr, "Failed to process the list of files: ", err)
 		return
 	}
 
-	err = assets.Generate(filenames, root, destination, packageName)
+	header, err := getHeader(headerName)
 	if err != nil {
-		fmt.Println("There was an error:", err)
+		fmt.Fprint(os.Stderr, "Failed to process the header file: ", err)
+		return
 	}
+
+	err = assets.Generate(filenames, expand(root), expand(destination), expand(packageName), header)
+	if err != nil {
+		fmt.Fprint(os.Stderr, "There was an error: ", err)
+		return
+	}
+	fmt.Fprint(os.Stdout, "Generated file: ", destination)
 }
