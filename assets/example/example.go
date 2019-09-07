@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/dimfeld/httptreemux"
-	"github.com/seamia/tools/assets"
 	"net/http"
 	"os"
+
+	"github.com/dimfeld/httptreemux"
+	"github.com/seamia/tools/assets"
 )
 
 func main() {
@@ -45,7 +46,7 @@ func constructTemplateHandler(name string, lifeData LiveDataFunc) http.HandlerFu
 }
 
 func process() interface{} {
-	return map[string] string {
+	return map[string]string{
 		"Name": "Example Service",
 	}
 }

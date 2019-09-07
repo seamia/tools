@@ -8,9 +8,10 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/golang/go/src/pkg/io/ioutil"
 	"github.com/seamia/tools/assets"
-	"os"
 )
 
 func readLines(path string) ([]string, error) {
@@ -27,7 +28,6 @@ func readLines(path string) ([]string, error) {
 	}
 	return lines, scanner.Err()
 }
-
 
 func expand(from string) string {
 	return os.ExpandEnv(from)

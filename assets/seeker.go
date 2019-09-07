@@ -11,9 +11,9 @@ import (
 
 func CreateReader(from []byte) (io.ReadSeeker, error) {
 	return &readerSeekerCloser{
-		data: from,
-		total: int64(len(from)),
-		open: true,
+		data:    from,
+		total:   int64(len(from)),
+		open:    true,
 		current: 0,
 	}, nil
 }
@@ -23,10 +23,10 @@ type readerSeekerCloser struct {
 	io.Seeker
 	io.Closer
 
-	data []byte
-	total int64
+	data    []byte
+	total   int64
 	current int64
-	open bool
+	open    bool
 }
 
 // Seek implements the io.Seeker interface.
@@ -59,7 +59,7 @@ func (r *readerSeekerCloser) Read(p []byte) (n int, err error) {
 		return 0, nil
 	}
 	looking4 := int64(len(p))
-	if r.current + looking4 > r.total {
+	if r.current+looking4 > r.total {
 		looking4 = r.total - r.current
 	}
 
