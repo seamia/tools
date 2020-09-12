@@ -17,7 +17,7 @@ const (
 
 func main() {
 
-	quit(len(os.Args) != 4, "Usage: macro source substitutes result ")
+	quit(len(os.Args) != 4, "Usage: macro-env source substitutes result ")
 
 	srcFile := os.Args[1]
 	subFile := os.Args[2]
@@ -30,53 +30,11 @@ func main() {
 }
 
 func replace(src string, subs map[string]string) string {
-	for from, to := range subs {
-		src = replaceOne(src, from, to)
-	}
-	return src
-}
-
-func replaceOne(src, from, to string) string {
-	result := ""
-	for {
-		start := strings.Index(src, from)
-		if start < 0 {
-			return result + src
-		}
-
-		leadingChar := false
-		if start == 0 {
-			leadingChar = true
-		} else {
-			edge := src[start-1]
-			if (edge >= 'a' && edge <= 'z') || (edge >= 'A' && edge <= 'Z') || (edge >= '0' && edge <= '9') || (edge == '_') {
-
-			} else {
-				leadingChar = true
-			}
-		}
-
-		end := start + len(from)
-		trailChar := false
-
-		if end == len(src) {
-			trailChar = true
-		} else {
-			edge := src[end]
-			if (edge >= 'a' && edge <= 'z') || (edge >= 'A' && edge <= 'Z') || (edge >= '0' && edge <= '9') || (edge == '_') {
-
-			} else {
-				trailChar = true
-			}
-		}
-
-		if leadingChar && trailChar {
-			result += src[:start] + to
-		} else {
-			result += src[:end]
-		}
-		src = src[end:]
-	}
+	return os.Expand(src, func(key string) string {
+		value, found := subs[key]
+		quit(!found, "failed to find a substitute for key [%s]", key)
+		return value
+	})
 }
 
 func loadSubstitutes(name string) map[string]string {
