@@ -1,2 +1,0 @@
-# seamia/tools/macro-env
-
