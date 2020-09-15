@@ -1,4 +1,4 @@
-// Copyright 2017 Seamia Corporation. All rights reserved.
+// Copyright 2020 Seamia Corporation. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -35,6 +35,9 @@ import (
 		}
 	}
 
+	warning:
+	since there no encryption, compression or any other form of obfuscation - all your (potential) "secrets" present
+	in the original files - will be plain visible in the compiled binary. well, duh =)
 */
 
 type Prescription struct {
