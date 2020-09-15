@@ -37,9 +37,17 @@ func replace(src string, subs map[string]string) string {
 	})
 }
 
-func loadSubstitutes(name string) map[string]string {
-	substitutes := readFile(name)
+func loadSubstitutes(names string) map[string]string {
 	subst := make(map[string]string)
+	for _, name := range strings.Split(names, ";") {
+		loadSubstitute(name, &subst)
+	}
+	return subst
+}
+
+func loadSubstitute(from string, to *map[string]string) {
+	substitutes := readFile(from)
+
 	for n, line := range strings.Split(substitutes, "\n") {
 		if len(trim(line)) == 0 {
 			// empty string --> nothing to do
@@ -51,18 +59,20 @@ func loadSubstitutes(name string) map[string]string {
 		}
 
 		equal := strings.Index(line, separator)
-		quit(equal <= 0, "failed to find separator; file: %s; line %d", name, n)
+		quit(equal <= 0, "failed to find separator; file: %s; line %d", from, n)
 
 		key := trim(line[:equal])
 		value := trim(line[equal+len(separator):])
-		quit(len(key) <= 0, "the key is empty; file: %s; line %d", name, n)
+		quit(len(key) <= 0, "the key is empty; file: %s; line %d", from, n)
 
 		// allow insert of environment variables
 		value = os.ExpandEnv(value)
 
-		subst[key] = value
+		if evalue, exists := (*to)[key]; exists {
+			quit(true, "found a dup key [%s] inside file [%s], set to [%s]", key, from, evalue)
+		}
+		(*to)[key] = value
 	}
-	return subst
 }
 
 func quit(condition bool, format string, a ...interface{}) {
