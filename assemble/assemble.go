@@ -25,14 +25,14 @@ import (
 		"package": "name-of-your-package",
 		"comment": "this is a colllection files =)",
 		"list": "allTogetherNow",
-		"include": {
-			"scriptCreate": "./generated/create.sql",
-			"scriptGrant": "./generated/grants.sql",
-			"scriptSeed": "./generated/seed.sql",
-			"scriptTable": "./generated/tables.sql",
-			"scriptTags": "./generated/tags.sql",
-			"scriptViews": "./generated/views.sql"
-		}
+		"include": [
+			"scriptCreate:./generated/create.sql",
+			"scriptGrant:./generated/grants.sql",
+			"scriptSeed:./generated/seed.sql",
+			"scriptTable:./generated/tables.sql",
+			"scriptTags:./generated/tags.sql",
+			"scriptViews:./generated/views.sql"
+		]
 	}
 
 	warning:
@@ -41,10 +41,10 @@ import (
 */
 
 type Prescription struct {
-	Package string            `json:"package"`
-	Include map[string]string `json:"include"`
-	List    string            `json:"list,omitempty"`
-	Comment string            `json:"comment,omitempty"`
+	Package string   `json:"package"`
+	Include []string `json:"include"`
+	List    string   `json:"list,omitempty"`
+	Comment string   `json:"comment,omitempty"`
 }
 
 const (
@@ -102,7 +102,10 @@ func main() {
 	}
 
 	names := make([]string, 0, len(prescription.Include))
-	for name, fileName := range prescription.Include {
+	for _, entry := range prescription.Include {
+		parts := strings.Split(entry, ":")
+		name, fileName := parts[0], parts[1]
+
 		raw, err := ioutil.ReadFile(fileName)
 		quitOnError(err, "no include (%s)", fileName)
 		corrected := escape(string(raw))
