@@ -101,6 +101,12 @@ func main() {
 		return ""
 	}
 
+	if len(prescription.Include) == 0 {
+		fmt.Fprintf(os.Stderr, "the list of includes appears to be empty (%s)", prescriptionName)
+
+		os.Exit(7)
+	}
+
 	names := make([]string, 0, len(prescription.Include))
 	for _, entry := range prescription.Include {
 		parts := strings.Split(entry, ":")
