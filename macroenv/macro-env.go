@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	separator = "="
+	separator              = "="
+	allowUnresolvedEntries = true
 )
 
 func main() {
@@ -31,9 +32,14 @@ func main() {
 
 func replace(src string, subs map[string]string) string {
 	return os.Expand(src, func(key string) string {
-		value, found := subs[key]
-		quit(!found, "failed to find a substitute for key [%s]", key)
-		return value
+		if value, found := subs[key]; found {
+			return value
+		} else if allowUnresolvedEntries {
+			return fmt.Sprintf("${%s}", key)
+		} else {
+			quit(true, "failed to find a substitute for key [%s]", key)
+			return "disaster" // to make compile 'happy'
+		}
 	})
 }
 
