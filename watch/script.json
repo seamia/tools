@@ -1,0 +1,18 @@
+[
+	{
+		"name": "5950X from AMD",
+		"url": "https://www.amd.com/en/direct-buy/us",
+		"after": ["<li>AMD Ryzen™ 9 5950X Processor</li>", "<div class=\"shop-links\">"],
+		"before": "</div>",
+		"missing": "Out of Stock",
+		"action": "alerts@super.duper"
+	},
+	{
+		"name": "5950X from AMD",
+		"url": "https://www.amd.com/en/direct-buy/us",
+		"after": ["<li>AMD Ryzen™ 9 5900X Processor</li>", "<div class=\"shop-links\">"],
+		"before": "</div>",
+		"missing": "Out of Stock",
+		"action": "alerts@super.duper"
+	}
+]
