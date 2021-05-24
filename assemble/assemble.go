@@ -53,7 +53,7 @@ const (
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Fprintf(os.Stderr, "USAGE: assemble prescription output\n")
+		fmt.Fprintf(os.Stderr, "USAGE: assemble prescription output\n(see github.com/seamia/tools/assemble)")
 		os.Exit(7)
 	}
 

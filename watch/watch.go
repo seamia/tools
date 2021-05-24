@@ -12,7 +12,7 @@ func main() {
 	script := "script.json"
 	if len(os.Args) > 1 {
 		script = os.Args[1]
-		report("using %s as script file...\n", script)
+		report("using %s as script file...", script)
 	}
 
 	data, err := ioutil.ReadFile(script)
@@ -37,9 +37,18 @@ func main() {
 
 func process(dict map[string]interface{}) {
 	name := dict["name"].(string)
+	if data, found := dict["active"]; found {
+		if active, converts := data.(bool); converts {
+			if !active {
+				report("skipping inactive: %s", name)
+				return
+			}
+		}
+	}
+
 	action := dict["action"].(string)
 
-	report("checking: %s\n", name)
+	report("checking: %s", name)
 
 	from := dict["url"].(string)
 	content, err := GetContent(from)
@@ -52,16 +61,20 @@ func process(dict map[string]interface{}) {
 
 	if missing, found := dict["missing"].(string); found && len(missing) > 0 {
 		if !strings.Contains(content, missing) {
-			report("FOUND: %s\n", name)
+			report("FOUND: %s", name)
 			alert(name, action)
+		} else {
+			report("--- missing is still there (%s)", missing)
 		}
 	} else if present, found := dict["present"].(string); found && len(present) > 0 {
 		if strings.Contains(content, present) {
-			report("FOUND: %s\n", name)
+			report("FOUND: %s", name)
 			alert(name, action)
+		} else {
+			report("--- present is still not there (%s)", present)
 		}
 	} else {
-		report("ERROR: no missing not present entry is found...\n")
+		report("ERROR: no missing not present entry is found...")
 	}
 }
 
@@ -84,7 +97,7 @@ func trimPrefix(original string, key interface{}) string {
 			}
 		}
 	default:
-		report("unhandled type: %v\n", actual)
+		report("unhandled type: %v", actual)
 	}
 
 	for _, step := range steps {
@@ -112,7 +125,7 @@ func trimSuffix(original string, key interface{}) string {
 			}
 		}
 	default:
-		report("unhandled type: %v\n", actual)
+		report("unhandled type: %v", actual)
 	}
 
 	for _, step := range steps {
@@ -126,5 +139,5 @@ func trimSuffix(original string, key interface{}) string {
 }
 
 func report(format string, arg ...interface{}) {
-	_, _ = fmt.Fprintf(os.Stdout, format, arg)
+	_, _ = fmt.Fprintf(os.Stdout, format+"\n", arg)
 }

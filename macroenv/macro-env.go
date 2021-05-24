@@ -18,7 +18,7 @@ const (
 
 func main() {
 
-	quit(len(os.Args) != 4, "USAGE: macroenv source substitutes result")
+	quit(len(os.Args) != 4, "USAGE: macroenv source substitutes result\n(see github.com/seamia/tools/macroenv)")
 
 	srcFile := os.Args[1]
 	subFile := os.Args[2]
