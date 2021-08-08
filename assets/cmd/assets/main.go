@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/go/src/pkg/io/ioutil"
+	"io/ioutil"
 	"github.com/seamia/tools/assets"
 )
 
