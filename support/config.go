@@ -7,16 +7,25 @@ package support
 import (
 	"encoding/json"
 	"errors"
-	"github.com/seamia/tools/assets"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
+
+	"github.com/seamia/tools/assets"
 )
 
 const (
 	configRuntimeBranch   = "runtime"
 	configLocationsBranch = "locations"
+	separator             = ";"
+)
+
+type (
+	msi = map[string]interface{}
 )
 
 func bytes2interface(raw []byte) (c interface{}, err error) {
@@ -28,7 +37,7 @@ func bytes2interface(raw []byte) (c interface{}, err error) {
 }
 
 func loadFromJson(name string) (interface{}, error) {
-	raw, err := ioutil.ReadFile(name)
+	raw, err := os.ReadFile(name)
 	if err != nil {
 		assert("*** Failed to locate/read file [" + name + "], error: " + err.Error())
 		return nil, err
@@ -70,10 +79,14 @@ func loadConfig(fullname string) (config map[string]interface{}, err error) {
 
 func LoadConfig(name string, fallbackToAssetsOnFailure bool) (map[string]interface{}, error) {
 
+	if components := strings.Split(name, separator); len(components) > 1 {
+		return loadConfigs(components, fallbackToAssetsOnFailure)
+	}
+
 	if assets.IsAssetFile(name) {
 		var err error
 		if reader, err := assets.Open(name); err == nil {
-			if data, err := ioutil.ReadAll(reader); err == nil {
+			if data, err := io.ReadAll(reader); err == nil {
 				if raw, err := bytes2interface(data); err == nil {
 					return raw.(map[string]interface{}), nil
 				} else {
@@ -134,6 +147,84 @@ func SetLocation(config map[string]interface{}, key, value string) {
 			}
 		}
 	}
+}
+
+func loadConfigs(names []string, fallbackToAssetsOnFailure bool) (msi, error) {
+
+	if runtime.GOOS == "windows" {
+		for i, name := range names {
+			names[i] = strings.ReplaceAll(name, `\`, `/`)
+		}
+	}
+
+	directory, _ := path.Split(names[0])
+
+	var result msi
+	for _, name := range names {
+
+		if len(directory) > 0 {
+			dirname, filename := path.Split(name)
+			if len(dirname) == 0 {
+				name = path.Join(directory, filename)
+			}
+		}
+
+		config, err := LoadConfig(name, fallbackToAssetsOnFailure)
+		if err != nil {
+			return nil, err
+		}
+		result = mergeConfigs(result, config)
+	}
+
+	if len(result) > 0 {
+		if rtime := result["runtime"]; rtime != nil {
+			if values := rtime.(map[string]string); len(values) > 0 {
+				if len(values["config.name"]) > 0 {
+					values["config.name"] = strings.Join(names, separator)
+				}
+			}
+
+		}
+	}
+	return result, nil
+}
+
+func mergeConfigs(left, right msi) msi {
+	if left == nil {
+		return right
+	}
+	if right == nil {
+		return left
+	}
+
+	for key, value := range right {
+		if lvalue, exist := left[key]; exist {
+			switch actual := value.(type) {
+			case map[string]interface{}:
+				left[key] = mergeConfigs(lvalue.(msi), actual)
+
+			case map[string]string:
+				lmap := lvalue.(map[string]string)
+				for k, v := range actual {
+					lmap[k] = v
+				}
+				left[key] = lmap
+
+			case string, bool, int:
+				left[key] = actual
+
+			case []interface{}:
+				left[key] = append(lvalue.([]interface{}), actual...)
+
+			default:
+				panic(fmt.Sprintf("unhandled type %s: %T\n", key, value))
+			}
+
+		} else {
+			left[key] = value
+		}
+	}
+	return left
 }
 
 func init() {
