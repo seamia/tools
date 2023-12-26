@@ -10,5 +10,5 @@ import (
 
 func assert(msg string) {
 	// todo: remove the output
-	fmt.Println("Assert: "+msg)
+	fmt.Println("Assert: " + msg)
 }
