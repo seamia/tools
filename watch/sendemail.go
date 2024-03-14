@@ -1,10 +1,14 @@
+// Copyright 2020 Seamia Corporation. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/smtp"
+	"os"
 	"strings"
 )
 
@@ -28,7 +32,7 @@ var (
 
 func sendEmail(to []string, txt string) {
 	if len(emailConfig.Username) == 0 {
-		if data, err := ioutil.ReadFile("./email.config"); err == nil {
+		if data, err := os.ReadFile(emailConfigFileName); err == nil {
 			if err := json.Unmarshal(data, &emailConfig); err != nil {
 				// no point to go on, since we have no config
 				fmt.Println("failed to load config")
@@ -58,4 +62,10 @@ func sendEmail(to []string, txt string) {
 		return
 	}
 	fmt.Println("Email Sent!")
+}
+
+func sendTestEmail(to []string) {
+	msg := "if you are getting this ... the mail delivery is working"
+	sendEmail(to, msg)
+	fmt.Fprintf(os.Stdout, "sending test emails...\n")
 }
