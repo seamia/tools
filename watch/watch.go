@@ -37,6 +37,10 @@ func main() {
 
 	list := loadList(script)
 
+	media := new(MediaImpl)
+	media.Printf("using script: %s\n", script)
+	media.Printf("(%s)\n", time.Now().Format(time.DateTime))
+
 	// -----------------------------------------------------------------------------------------------------------------
 	to := []string{}
 	for _, task := range list {
@@ -57,7 +61,11 @@ func main() {
 	// -----------------------------------------------------------------------------------------------------------------
 
 	for _, task := range list {
-		process(task)
+		process(task, media)
+	}
+
+	if getFlag(config, "send.summary.email", false) {
+		sendEmail([]string{defaultEmail}, media.Get())
 	}
 }
 
@@ -68,13 +76,20 @@ var (
 	download func(string) (string, error)
 )
 
-func process(dict msi) {
+func process(dict msi, media Media) {
 
 	download = DownloadHTML
 	name := dict["name"].(string)
+
+	trace := func(format string, args ...interface{}) {
+		media.Printf("entry [%s]: ", name)
+		media.Printf(format+"\n", args...)
+	}
+
 	if data, found := dict["active"]; found {
 		if active, converts := data.(bool); converts {
 			if !active {
+				trace("marked as not active")
 				report("skipping inactive: %s", name)
 				return
 			}
@@ -89,6 +104,7 @@ func process(dict msi) {
 	fullContent, err := download(from)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to download from (%s) with error: %v\n", from, err)
+		trace("failed to download from (%s) with error: %v\n", from, err)
 		return
 	}
 
@@ -96,7 +112,9 @@ func process(dict msi) {
 
 	content := trimPrefix(fullContent, dict["after"])
 	content = trimSuffix(content, dict["before"])
-	saveContent("trimmed-"+name, content)
+	if len(content) < len(fullContent) {
+		saveContent("trimmed-"+name, content)
+	}
 
 	if known, found := dict["known"].(string); found && len(known) > 0 {
 		if strings.Compare(content, known) != 0 {
@@ -105,6 +123,7 @@ func process(dict msi) {
 			txt := fmt.Sprintf("%s. changed from %s to %s", name, known, content)
 			alert(txt, action)
 		} else {
+			trace("current value: %s", known)
 			report("--- known is still there (%s)", known)
 		}
 	} else if missing, found := dict["missing"].(string); found && len(missing) > 0 {
@@ -124,6 +143,6 @@ func process(dict msi) {
 			report("--- present is still not there (%s)", present)
 		}
 	} else {
-		report("ERROR: no missing not present entry is found...")
+		report("ERROR: missing any recognisable operations...")
 	}
 }

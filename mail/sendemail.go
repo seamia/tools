@@ -2,7 +2,7 @@ package mail
 
 import (
 	"encoding/json"
-	"github.com/nontechno/later"
+	"github.com/nontechno/link"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/smtp"
@@ -67,6 +67,6 @@ func SendEmail(to []string, txt string) {
 }
 
 func init() {
-	later.Register(SendEmail, "send.mail")
-	later.Link(&getLog, "get.log")
+	link.Register(SendEmail, "send.mail")
+	link.Link(&getLog, "get.log", nil)
 }
