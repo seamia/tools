@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 
 var (
 	emailConfigFileName = "./email.config"
+	tmpFolderDefaultName = "./tmp.%v"
 	userAgent           = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36"
 	defaultEmail        = ""
 	config              msi
@@ -30,9 +32,11 @@ func main() {
 		report("using %s as script file...", script)
 	}
 
+	tmpFolder := createTmpFolder(get(config, "tmp.folder", tmpFolderDefaultName))
 	report("--------------------------- start. script: %v. time: %v", script, time.Now())
 	defer func() {
 		report("--------------------------- stop. time: %v", time.Now())
+		removeTmpFolder(tmpFolder)
 	}()
 
 	list := loadList(script)
@@ -90,7 +94,7 @@ func process(dict msi, media Media) {
 		if active, converts := data.(bool); converts {
 			if !active {
 				trace("marked as not active")
-				report("skipping inactive: %s", name)
+				report("\tskipping inactive: %s", name)
 				return
 			}
 		}
@@ -101,6 +105,35 @@ func process(dict msi, media Media) {
 	report("checking: %s", name)
 
 	from := dict["url"].(string)
+
+	if status64, found := dict["status"].(float64); found && status64 > 0 {
+		status := int(status64)
+		if req, err := http.NewRequest("GET", from, nil); err != nil {
+			report("\tgot error: %v", err)
+		} else {
+			// Execute the request.
+			txt := ""
+			if resp, err := http.DefaultClient.Do(req); err != nil {
+				report("\tgot error: %v", err)
+				txt = fmt.Sprintf("%s. error: %v", name, err)
+			} else {
+
+				// Close response body as required.
+				defer resp.Body.Close()
+
+				report("\tgot status: %v", resp.StatusCode)
+				if resp.StatusCode != status {
+					txt = fmt.Sprintf("%s. instead of expected status (%v) got: %v", name, status, resp.StatusCode)
+				}
+			}
+
+			if len(txt) > 0 {
+				alert(txt, action)
+			}
+		}
+		return
+	}
+
 	fullContent, err := download(from)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to download from (%s) with error: %v\n", from, err)
@@ -119,30 +152,39 @@ func process(dict msi, media Media) {
 	if known, found := dict["known"].(string); found && len(known) > 0 {
 		if strings.Compare(content, known) != 0 {
 			saveContent(name, fullContent)
-			report("BINGO: %s. found %s instead of %s", name, content, known)
-			txt := fmt.Sprintf("%s. changed from %s to %s", name, known, content)
-			alert(txt, action)
+			report("\tBINGO: %s. found %s instead of %s", name, content, known)
+			// txt := fmt.Sprintf("%s. changed from %s to %s", name, known, content)
+
+			values := map[string]string{
+				"Entry":    name,
+				"Source":   get(dict, "url", ""),
+				"Expected": known,
+				"Actual":   content,
+			}
+
+			// use "content" instead of "known", so that any future changes (of "content") will result in a new signature
+			alertAck(action, name, content, "known.html", values)
 		} else {
 			trace("current value: %s", known)
-			report("--- known is still there (%s)", known)
+			report("\t--- known is still there (%s)", known)
 		}
 	} else if missing, found := dict["missing"].(string); found && len(missing) > 0 {
 		if !strings.Contains(content, missing) {
 			saveContent(name, fullContent)
-			report("FOUND: %s", name)
+			report("\tFOUND: %s", name)
 			alert(name, action)
 		} else {
-			report("--- missing is still there (%s)", missing)
+			report("\t--- missing is still there (%s)", missing)
 		}
 	} else if present, found := dict["present"].(string); found && len(present) > 0 {
 		if strings.Contains(content, present) {
-			report("FOUND: %s", name)
+			report("\tFOUND: %s", name)
 			saveContent(name, fullContent)
 			alert(name, action)
 		} else {
-			report("--- present is still not there (%s)", present)
+			report("\t--- present is still not there (%s)", present)
 		}
 	} else {
-		report("ERROR: missing any recognisable operations...")
+		report("\tERROR: missing any recognisable operations...")
 	}
 }

@@ -1,18 +1,93 @@
 [
 	{
-		"name": "5950X from AMD",
-		"url": "https://www.amd.com/en/direct-buy/us",
-		"after": ["<li>AMD Ryzen™ 9 5950X Processor</li>", "<div class=\"shop-links\">"],
-		"before": "</div>",
-		"missing": "Out of Stock",
-		"action": "alerts@super.duper"
+		"active":	false,
+		"name":		"outlet.arcteryx",
+		"url":		"https://outlet.arcteryx.com/us/en/c/mens?sort=price-ascending",
+		"missing":	"aria-label=\"Sold Out\"",
+		"action":	"pavel.treskunov@gmail.com"
+	},
+
+	{
+		"active":	true,
+		"name":		"Infrared (IR) Waxer",
+		"url":		"https://mountainflow.com/products/ir-waxer-2-0",
+		"missing":	"aria-label=\"Sold Out\"",
+		"action":	"pavel.treskunov@gmail.com"
+	},
+
+	{
+		"active":	true,
+		"name":		"lilygo: T-Display S3 Pro + camera",
+		"url":		"https://www.lilygo.cc/products/t-display-s3-pro?variant=43111690764469",
+		"missing":	"<span>Sold out",
+		"action":	"pavel.treskunov@gmail.com"
+	},
+
+	{
+		"active":	false,
+		"name":		"mobilinkd-tnc4",
+		"url":		"https://store.mobilinkd.com/products/mobilinkd-tnc4",
+		"missing":	"value=\"Pre-order\"",
+		"action":	"pavel.treskunov@gmail.com"
 	},
 	{
-		"name": "5950X from AMD",
-		"url": "https://www.amd.com/en/direct-buy/us",
-		"after": ["<li>AMD Ryzen™ 9 5900X Processor</li>", "<div class=\"shop-links\">"],
-		"before": "</div>",
-		"missing": "Out of Stock",
-		"action": "alerts@super.duper"
+		"active":	false,
+		"name":		"rocky-talkie",
+		"url":		"https://rockytalkie.com/products/rocky-talkie",
+		"missing":	"We're currently sold out.",
+		"action":	"pavel.treskunov@gmail.com"
+	},
+	{
+		"active":	false,
+		"name":		"waterproof-hand-mic",
+		"url":		"https://rockytalkie.com/products/waterproof-hand-mic",
+		"missing":	"We have <b> sold out</b> of our first production run.",
+		"action":	"pavel.treskunov@gmail.com"
+	},
+
+
+
+	{
+		"active":	false,
+		"name":		"Turing RK1",
+		"url":		"https://turingpi.com/product/turing-rk1/?attribute_ram=32&id=704401",
+		"missing":	">Out of stock<",
+		"action":	"pavel.treskunov@gmail.com"
+	},
+
+
+
+	{
+		"active":	true,
+		"name":		"Raspberry Pi Zero 2 W (adafruit)",
+		"url":		"https://www.adafruit.com/product/5291",
+		"missing":	">Out of stock<",
+		"action":	"pavel.treskunov@gmail.com"
+	},
+	{
+		"active":	false,
+		"name":		"Waveshare RP2040-PiZero",
+		"url":		"https://www.waveshare.com/rp2040-pizero.htm",
+		"missing":	"<span>BACKORDER</span>",
+		"action":	"pavel.treskunov@gmail.com"
+	},
+
+	{
+		"active":	true,
+		"name":		"far manager",
+		"url":		"https://www.farmanager.com/download.php?l=en",
+		"after":	["<b>Far Manager ", " build "],
+		"before":	" x86</b> ",
+		"known":	"6301",
+		"action":	"pavel.treskunov@gmail.com"
+	},
+
+
+	{
+		"active":	true,
+		"name":		"within3",
+		"url":		"https://within3.com/about-us",
+		"missing":	">Jason Smith",
+		"action":	"pavel.treskunov@gmail.com"
 	}
 ]

@@ -15,7 +15,29 @@ type (
 	msi = map[string]interface{}
 )
 
+const (
+	appName = "seamia/watch"
+)
+
+func alertAck(address, entry, value string, templateFileName string, values map[string]string) {
+
+	if ack, err := ackGet(appName, entry, value, address); err != nil || ack == false {
+		if err := ackReserve(appName, entry, value, address); err != nil {
+			report("failed to reserve, err: %v", err)
+		}
+	} else {
+		report("\treceiver (%s) already seen (%s) and (%s). not sending another email", address, entry, value)
+		return
+	}
+
+	values["URL"] = getAckConfirmUrl(appName, entry, value, address)
+	sendTemplateEmail([]string{address}, templateFileName, values)
+
+	// sendEmail([]string{address}, name)
+}
+
 func alert(name, address string) {
+
 	sendEmail([]string{address}, name)
 }
 

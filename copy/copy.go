@@ -21,6 +21,8 @@ const (
 	flagVerbal           = false
 
 	cutoffFileSize = 1 * 1024 * 1024
+
+	allowOnlyGoFiles = true
 )
 
 var (
@@ -33,6 +35,7 @@ var (
 func Copy(src, dest string) error {
 	info, err := os.Lstat(src)
 	if err != nil {
+		fmt.Println("error10", err)
 		return err
 	}
 
@@ -88,7 +91,7 @@ func fcopy(src, dest string, info os.FileInfo) error {
 
 	if flagCopyFiles {
 		if err := os.MkdirAll(filepath.Dir(dest), os.ModePerm); err != nil {
-			fmt.Println("error", err)
+			fmt.Println("error1", err)
 			return err
 		}
 
@@ -109,19 +112,19 @@ func fcopy(src, dest string, info os.FileInfo) error {
 
 		f, err := os.Create(dest)
 		if err != nil {
-			fmt.Println("error", err)
+			fmt.Println("error2", err)
 			return err
 		}
 		defer f.Close()
 
 		if err = os.Chmod(f.Name(), info.Mode()); err != nil {
-			fmt.Println("error", err)
+			fmt.Println("error3", err)
 			return err
 		}
 
 		s, err := os.Open(src)
 		if err != nil {
-			fmt.Println("error", err)
+			fmt.Println("error4", err)
 			return err
 		}
 		defer s.Close()
@@ -156,7 +159,7 @@ func dcopy(srcdir, destdir string, info os.FileInfo) error {
 
 	// Make dest dir with 0755 so that everything writable.
 	if err := os.MkdirAll(destdir, tmpPermissionForDirectory); err != nil {
-		fmt.Println("error", err)
+		fmt.Println("error5", err)
 		return err
 	}
 	// Recover dir mode with original one.
@@ -164,15 +167,17 @@ func dcopy(srcdir, destdir string, info os.FileInfo) error {
 
 	contents, err := ioutil.ReadDir(srcdir)
 	if err != nil {
-		fmt.Println("error", err)
-		return err
+		fmt.Println("error6", err)
+
+		return nil // todo: is this an appropriate ??
+		// return err
 	}
 
 	for _, content := range contents {
 		cs, cd := filepath.Join(srcdir, content.Name()), filepath.Join(destdir, content.Name())
 		if err := copy(cs, cd, content); err != nil {
 			// If any error, exit immediately
-			fmt.Println("error", err)
+			fmt.Println("error7", err)
 			return err
 		}
 	}
@@ -185,7 +190,7 @@ func dcopy(srcdir, destdir string, info os.FileInfo) error {
 func lcopy(src, dest string, info os.FileInfo) error {
 	src, err := os.Readlink(src)
 	if err != nil {
-		fmt.Println("error", err)
+		fmt.Println("error8", err)
 		return err
 	}
 
@@ -217,6 +222,22 @@ func disregard(info os.FileInfo) bool {
 		}
 		// fmt.Println("==============", info.Name())
 	} else {
+
+		if allowOnlyGoFiles {
+			if strings.HasSuffix(name, ".go") {
+				return false
+			}
+
+			// exact match
+			for _, one := range []string{"go.mod"} {
+				if name == one {
+					return false
+				}
+			}
+
+			return true
+		}
+
 		// exact match
 		for _, one := range []string{".ds_store"} {
 			if name == one {
@@ -275,7 +296,14 @@ func rememberFileExistence(name string) {
 }
 
 func main() {
-	err := Copy("/go/path/src", "/Search/go")
+	if len(os.Args) != 3 {
+		fmt.Fprintf(os.Stderr, "missing required arguments: app from to\n")
+		return
+	}
+	src := os.Args[1]
+	dst := os.Args[2]
+
+	err := Copy(src, dst)
 	if err != nil {
 		fmt.Println("FAILED:", err)
 	} else {

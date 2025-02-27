@@ -46,7 +46,7 @@ func failure(what string, err error) {
 }
 
 const (
-	lineSeparator = "\n"
-	trimCutSet    = " \t\r"
+	lineSeparator   = "\n"
+	trimCutSet      = " \t\r"
 	filePremissions = 0644
 )
