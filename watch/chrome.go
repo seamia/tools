@@ -11,7 +11,17 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+var (
+	alreadyDownloaded = make(map[string]string)
+)
+
 func DownloadHTML(what string) (string, error) {
+
+	if value, found := alreadyDownloaded[what]; found {
+		report("\treusing previously downloaded: %s", what)
+		return value, nil
+	}
+
 	// create context
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
@@ -21,6 +31,7 @@ func DownloadHTML(what string) (string, error) {
 		return "", err
 	}
 
+	alreadyDownloaded[what] = text
 	return text, nil
 }
 
@@ -30,7 +41,7 @@ func getHtml(urlstr string, res *string) chromedp.Tasks {
 	headers["User-Agent"] = userAgent
 
 	headers["Sec-Ch-Ua"] = `" Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"`
-	headers["Accept-Language"] = `en-US,en;q=0.9,ru;q=0.8`
+	headers["Accept-Language"] = `en-US,en;q=0.9`
 	headers["Sec-Ch-Ua-Mobile"] = `?0`
 
 	return chromedp.Tasks{

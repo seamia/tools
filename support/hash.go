@@ -7,6 +7,7 @@ package support
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"github.com/deatil/go-encoding/base62"
 )
 
 func Hash(raw []byte) string {
@@ -17,4 +18,9 @@ func Hash(raw []byte) string {
 
 func NameToId(name string, length int) string {
 	return Hash([]byte(name))[:length]
+}
+
+func Hash62(raw []byte) string {
+	encodedString := base62.StdEncoding.EncodeToString(data)
+	return encodedString
 }
